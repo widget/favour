@@ -72,7 +72,7 @@
 			static inline uint8_t Buttons_GetStatus(void)
 			{
                 // negated as the buttons are active low
-				return ((PIND & (BUTTONS_MASK) ^ BUTTONS_MASK);
+				return ((PIND & BUTTONS_MASK) ^ BUTTONS_MASK);
 			}
 		#endif
 

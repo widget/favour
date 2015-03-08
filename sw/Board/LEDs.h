@@ -63,12 +63,20 @@ bool high_power = true;
             #define LED_HIGH4 (1 << 6)
             #define LED_HIGH5 (1 << 7)
             #define LED_HIGH_ALL 0xf1
+            
+            #define LED1 (1 << 0)
+            #define LED2 (1 << 1)
+            #define LED3 (1 << 2)
+            #define LED4 (1 << 3)
+            #define LED5 (1 << 4)
+            #define LED_ALL 0x1f
 
 		/* Inline Functions: */
 		#if !defined(__DOXYGEN__)
 			static inline void LEDs_Init(bool high)
 			{
-                if (high)
+                high_power = high;
+                if (high_power)
                 {
                     // Ensure the low io pins are hiZ
                     DDRC &= ~(LED_LOW_ALL);
@@ -94,34 +102,75 @@ bool high_power = true;
 
 			static inline void LEDs_TurnOnLEDs(const uint8_t LEDMask)
 			{
-				PORTD &= ~LEDMask;
+                uint8_t m;
+                if (high_power)
+                {
+                    m = ((LEDMask & 0x1e) << 3) | (LEDMask & 0x1);
+                    PORTB &= ~m;
+                }
+                else
+                {
+                    m = ((LEDMask & 0x1e) << 3) | ((LEDMask & 0x1) << 2);
+                    PORTC &= ~m;
+                }
 			}
 
 			static inline void LEDs_TurnOffLEDs(const uint8_t LEDMask)
 			{
-				PORTD |=  LEDMask;
+                uint8_t m;
+                if (high_power)
+                {
+                    m = ((LEDMask & 0x1e) << 3) | (LEDMask & 0x1);
+                    PORTB |= m;
+                }
+                else
+                {
+                    m = ((LEDMask & 0x1e) << 3) | ((LEDMask & 0x1) << 2);
+                    PORTC |= m;
+                }
 			}
 
 			static inline void LEDs_SetAllLEDs(const uint8_t LEDMask)
 			{
-				PORTD = ((PORTD | LEDS_ALL_LEDS) & ~LEDMask);
+                uint8_t m;
+                if (high_power)
+                {
+                    m = ((LEDMask & 0x1e) << 3) | (LEDMask & 0x1);
+                    PORTB = (PORTB | LED_HIGH_ALL) & ~m;
+                }
+                else
+                {
+                    m = ((LEDMask & 0x1e) << 3) | ((LEDMask & 0x1) << 2);
+                    PORTC = (PORTC | LED_LOW_ALL)  & ~m;
+                }
 			}
 
 			static inline void LEDs_ChangeLEDs(const uint8_t LEDMask,
 			                                   const uint8_t ActiveMask)
 			{
-				PORTD = ((PORTD & ~LEDMask) | ActiveMask);
+				//PORTD = ((PORTD & ~LEDMask) | ActiveMask);
 			}
 
 			static inline void LEDs_ToggleLEDs(const uint8_t LEDMask)
 			{
-				PIND  = LEDMask;
+                uint8_t m;
+                if (high_power)
+                {
+                    m = ((LEDMask & 0x1e) << 3) | (LEDMask & 0x1);
+                    PINB = m;
+                }
+                else
+                {
+                    m = ((LEDMask & 0x1e) << 3) | ((LEDMask & 0x1) << 2);
+                    PINC = m;
+                }
 			}
 
 			static inline uint8_t LEDs_GetLEDs(void) ATTR_WARN_UNUSED_RESULT;
 			static inline uint8_t LEDs_GetLEDs(void)
 			{
-				return (~PORTD & LEDS_ALL_LEDS);
+				//return (~PORTD & LEDS_ALL_LEDS);
+                return false;
 			}
 		#endif
 

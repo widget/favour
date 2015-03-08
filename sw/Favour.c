@@ -36,6 +36,8 @@
 
 #include "Favour.h"
 
+#include <avr/sleep.h>
+
 /** Buffer to hold the previously generated Keyboard HID report, for comparison purposes inside the HID class driver. */
 static uint8_t PrevKeyboardHIDReportBuffer[sizeof(USB_KeyboardReport_Data_t)];
 
@@ -59,7 +61,37 @@ USB_ClassInfo_HID_Device_t Keyboard_HID_Interface =
 			},
 	};
 
-
+#define LED_MAX_BRIGHT 20
+#define LED_COUNT 5
+uint8_t led_pwm[LED_COUNT];
+uint8_t count = 0;
+/* Interrupt triggered by the timer every 5kHz,
+ * a simple PWM control of all LEDs.
+ * 
+ * TODO Change this to stagger LEDs so e.g. if they
+ * are set to 20% brightness they are enabled in turn
+ */
+ISR(TIMER0_COMPA_vect, ISR_BLOCK)
+{
+    if (!count)
+    {
+        LEDs_TurnOnLEDs(LED_ALL);
+    }
+    for (uint8_t i = 0; i < LED_MAX_BRIGHT; ++i)
+    {
+        if (led_pwm[i] == count)
+        {
+            LEDs_TurnOffLEDs(1 << i);
+        }
+    }
+    count++;
+    if (count >= LED_MAX_BRIGHT)
+    {
+        count = 0;
+    }
+    TIFR0 = 0;
+}
+    
 bool usb_present = true;
     
 /** Main program entry point. This routine contains the overall program flow, including initial
@@ -80,6 +112,11 @@ int main(void)
             HID_Device_USBTask(&Keyboard_HID_Interface);
             USB_USBTask();
         }
+        else
+        {
+            sei();
+            sleep_cpu();
+        }
 	}
 }
 
@@ -90,8 +127,6 @@ void SetupHardware()
 	MCUSR &= ~(1 << WDRF);
 	wdt_disable();
 
-	/* Disable clock division */
-	clock_prescale_set(clock_div_1);
     
 
 	/* Hardware Initialization */
@@ -108,10 +143,48 @@ void SetupHardware()
     
 	LEDs_Init(usb_present);
     
+    TCNT0  = 0x00; // start value
+    TIMSK0 = (1 << OCIE0A); // Interrupt enable on compare A
+    TCCR0A = 0x02; // Clear Timer on Compare (CTC) mode
+        
     if (usb_present)
     {
+        /* Disable clock division */
+        clock_prescale_set(clock_div_1);
         USB_Init();
+        
+        OCR0A  =   24; // 5.2kHz
+        // set timer0 to be 8MHz/8 = 125Hz
+        TCCR0B = 0x05;
     }
+    else
+    {
+        // once tested, try 128
+        clock_prescale_set(clock_div_8);
+        power_usb_disable();
+        power_spi_disable();
+        power_timer1_disable();
+        power_usart1_disable();
+        // disable analogue comparator
+        ACSR |= (1 << ACD);
+        
+        // we need to disable BOD and debug fuses
+        
+        if (CLKSEL0 & (1 << CLKS))
+        {
+            // Turn off RC osc too
+            CLKSEL0 &= ~(1 << RCE);
+        }
+        
+        // this should be the default
+        set_sleep_mode(SLEEP_MODE_IDLE);
+        sleep_enable();
+        
+        OCR0A  =   12; // 5.16kHz
+        // Set timer0 to be 8/(128*1) - 62kHz
+        TCCR0B = 0x02;
+    }
+    
 }
 
 /** Event handler for the library USB Connection event. */
@@ -173,7 +246,7 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
 
 	uint8_t UsedKeyCodes = 0;
 
-	if (ButtonStatus_LCL & BUTTONS_BUTTON1)
+	if (ButtonStatus_LCL & BUTTONS_HWB)
 	  KeyboardReport->KeyCode[UsedKeyCodes++] = HID_KEYBOARD_SC_F;
 
 	if (UsedKeyCodes)
