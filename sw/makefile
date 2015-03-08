@@ -14,7 +14,7 @@
 MCU          = at90usb162
 ARCH         = AVR8
 BOARD        = USER
-F_CPU        = 16000000
+F_CPU        = 8000000
 F_USB        = $(F_CPU)
 OPTIMIZATION = s
 TARGET       = Favour
@@ -34,5 +34,5 @@ include $(LUFA_PATH)/Build/lufa_cppcheck.mk
 include $(LUFA_PATH)/Build/lufa_doxygen.mk
 include $(LUFA_PATH)/Build/lufa_dfu.mk
 include $(LUFA_PATH)/Build/lufa_hid.mk
-include $(LUFA_PATH)/Build/lufa_avrdude.mk
-include $(LUFA_PATH)/Build/lufa_atprogram.mk
+#include $(LUFA_PATH)/Build/lufa_avrdude.mk
+#include $(LUFA_PATH)/Build/lufa_atprogram.mk

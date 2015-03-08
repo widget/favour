@@ -29,29 +29,11 @@
 */
 
 /** \file
- *  \brief Board specific Buttons driver header for the MINIMUS.
- *  \copydetails Group_Buttons_MINIMUS
- *
- *  \note This file should not be included directly. It is automatically included as needed by the Buttons driver
- *        dispatch header located in LUFA/Drivers/Board/Buttons.h.
+ *  The buttons are identical to the minimus
  */
 
-/** \ingroup Group_Buttons
- *  \defgroup Group_Buttons_MINIMUS MINIMUS
- *  \brief Board specific Buttons driver header for the MINIMUS.
- *
- *  Board specific Buttons driver header for the MINIMUS.
- *
- *  <table>
- *    <tr><th>Name</th><th>Info</th><th>Active Level</th><th>Port Pin</th></tr>
- *    <tr><td>BUTTONS_BUTTON1</td><td>HWB Button</td><td>Low</td><td>PORTD.7</td></tr>
- *  </table>
- *
- *  @{
- */
-
-#ifndef __BUTTONS_MINIMUS_H__
-#define __BUTTONS_MINIMUS_H__
+#ifndef __BUTTONS_FAVOUR_H__
+#define __BUTTONS_FAVOUR_H__
 
 
 	/* Enable C linkage for C++ Compilers: */
@@ -67,26 +49,30 @@
 	/* Public Interface - May be used in end-application: */
 		/* Macros: */
 			/** Button mask for the first button on the board. */
-			#define BUTTONS_BUTTON1      (1 << 7)
+			#define BUTTONS_HWB      (1 << 7)
+            #define BUTTONS_VCC      (1 << 6)
+            
+            #define BUTTONS_MASK (BUTTONS_HWB | BUTTONS_VCC)
 
 		/* Inline Functions: */
 		#if !defined(__DOXYGEN__)
 			static inline void Buttons_Init(void)
 			{
-				DDRD  &= ~BUTTONS_BUTTON1;
-				PORTD |=  BUTTONS_BUTTON1;
+				DDRD  &= ~(BUTTONS_MASK);
+                // Disables pullups by writing zeroes when set as input.
+                PORTD &= ~(BUTTONS_MASK);
 			}
 
 			static inline void Buttons_Disable(void)
 			{
-				DDRD  &= ~BUTTONS_BUTTON1;
-				PORTD &= ~BUTTONS_BUTTON1;
+                // Do nothing
 			}
 
 			static inline uint8_t Buttons_GetStatus(void) ATTR_WARN_UNUSED_RESULT;
 			static inline uint8_t Buttons_GetStatus(void)
 			{
-				return ((PIND & BUTTONS_BUTTON1) ^ BUTTONS_BUTTON1);
+                // negated as the buttons are active low
+				return ((PIND & (BUTTONS_MASK) ^ BUTTONS_MASK);
 			}
 		#endif
 

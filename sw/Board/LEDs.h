@@ -29,30 +29,13 @@
 */
 
 /** \file
- *  \brief Board specific LED driver header for the MINIMUS.
- *  \copydetails Group_LEDs_MINIMUS
- *
- *  \note This file should not be included directly. It is automatically included as needed by the LEDs driver
- *        dispatch header located in LUFA/Drivers/Board/LEDs.h.
- */
-
-/** \ingroup Group_LEDs
- *  \defgroup Group_LEDs_MINIMUS MINIMUS
- *  \brief Board specific LED driver header for the MINIMUS.
- *
- *  Board specific LED driver header for the Minimus USB (http://www.minimususb.com/).
- *
- *  <table>
- *    <tr><th>Name</th><th>Color</th><th>Info</th><th>Active Level</th><th>Port Pin</th></tr>
- *    <tr><td>LEDS_LED1</td><td>Blue</td><td>General Indicator</td><td>Low</td><td>PORTD.5</td></tr>
- *    <tr><td>LEDS_LED2</td><td>Red</td><td>General Indicator</td><td>Low</td><td>PORTD.6</td></tr>
- *  </table>
- *
- *  @{
+ *  There are FIVE LIGHTS!  Which also run off 5V or 3V3 as Vcc is variable
  */
 
 #ifndef __LEDS_MINIMUS_H__
 #define __LEDS_MINIMUS_H__
+
+bool high_power = true;
 
 	/* Enable C linkage for C++ Compilers: */
 		#if defined(__cplusplus)
@@ -64,32 +47,49 @@
 			#error Do not include this file directly. Include LUFA/Drivers/Board/LEDS.h instead.
 		#endif
 
+		
 	/* Public Interface - May be used in end-application: */
 		/* Macros: */
-			/** LED mask for the first LED on the board. */
-			#define LEDS_LED1        (1 << 5)
+            #define LED_LOW1 (1 << 2)
+            #define LED_LOW2 (1 << 4)
+            #define LED_LOW3 (1 << 5)
+            #define LED_LOW4 (1 << 6)
+            #define LED_LOW5 (1 << 7)
+            #define LED_LOW_ALL 0xf4
 
-			/** LED mask for the second LED on the board. */
-			#define LEDS_LED2        (1 << 6)
-
-			/** LED mask for all the LEDs on the board. */
-			#define LEDS_ALL_LEDS    (LEDS_LED1 | LEDS_LED2)
-
-			/** LED mask for the none of the board LEDs. */
-			#define LEDS_NO_LEDS     0
+            #define LED_HIGH1 (1 << 0)
+            #define LED_HIGH2 (1 << 4)
+            #define LED_HIGH3 (1 << 5)
+            #define LED_HIGH4 (1 << 6)
+            #define LED_HIGH5 (1 << 7)
+            #define LED_HIGH_ALL 0xf1
 
 		/* Inline Functions: */
 		#if !defined(__DOXYGEN__)
-			static inline void LEDs_Init(void)
+			static inline void LEDs_Init(bool high)
 			{
-				DDRD  |= LEDS_ALL_LEDS;
-				PORTD |= LEDS_ALL_LEDS;
+                if (high)
+                {
+                    // Ensure the low io pins are hiZ
+                    DDRC &= ~(LED_LOW_ALL);
+                    // Set the high io pins to output high (LED off)
+                    DDRB  |= LED_HIGH_ALL;
+                    PORTB |= LED_HIGH_ALL;
+                }
+                else
+                {
+                    // Ensure the low io pins are hiZ
+                    DDRB &= ~(LED_HIGH_ALL);
+                    // Set the high io pins to output high (LED off)
+                    DDRC  |= LED_LOW_ALL;
+                    PORTC |= LED_LOW_ALL;
+                }
 			}
 
 			static inline void LEDs_Disable(void)
 			{
-				DDRD  &= ~LEDS_ALL_LEDS;
-				PORTD &= ~LEDS_ALL_LEDS;
+                DDRB &= ~(LED_HIGH_ALL);
+                DDRC &= ~(LED_LOW_ALL);
 			}
 
 			static inline void LEDs_TurnOnLEDs(const uint8_t LEDMask)
