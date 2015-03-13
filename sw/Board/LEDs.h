@@ -79,7 +79,7 @@ bool high_power = true;
                 if (high_power)
                 {
                     // Ensure the low io pins are hiZ
-                    DDRC &= ~(LED_LOW_ALL);
+                    DDRC &= (uint8_t)~(LED_LOW_ALL);
                     // Set the high io pins to output high (LED off)
                     DDRB  |= LED_HIGH_ALL;
                     PORTB |= LED_HIGH_ALL;
@@ -87,7 +87,7 @@ bool high_power = true;
                 else
                 {
                     // Ensure the low io pins are hiZ
-                    DDRB &= ~(LED_HIGH_ALL);
+                    DDRB &= (uint8_t)~(LED_HIGH_ALL);
                     // Set the high io pins to output high (LED off)
                     DDRC  |= LED_LOW_ALL;
                     PORTC |= LED_LOW_ALL;
@@ -96,8 +96,8 @@ bool high_power = true;
 
 			static inline void LEDs_Disable(void)
 			{
-                DDRB &= ~(LED_HIGH_ALL);
-                DDRC &= ~(LED_LOW_ALL);
+                DDRB &= (uint8_t)~(LED_HIGH_ALL);
+                DDRC &= (uint8_t)~(LED_LOW_ALL);
 			}
 
 			static inline void LEDs_TurnOnLEDs(const uint8_t LEDMask)
@@ -106,12 +106,12 @@ bool high_power = true;
                 if (high_power)
                 {
                     m = ((LEDMask & 0x1e) << 3) | (LEDMask & 0x1);
-                    PORTB &= ~m;
+                    PORTB &= (uint8_t)~m;
                 }
                 else
                 {
                     m = ((LEDMask & 0x1e) << 3) | ((LEDMask & 0x1) << 2);
-                    PORTC &= ~m;
+                    PORTC &= (uint8_t)~m;
                 }
 			}
 
@@ -136,12 +136,12 @@ bool high_power = true;
                 if (high_power)
                 {
                     m = ((LEDMask & 0x1e) << 3) | (LEDMask & 0x1);
-                    PORTB = (PORTB | LED_HIGH_ALL) & ~m;
+                    PORTB = (PORTB | LED_HIGH_ALL) & (uint8_t)~m;
                 }
                 else
                 {
                     m = ((LEDMask & 0x1e) << 3) | ((LEDMask & 0x1) << 2);
-                    PORTC = (PORTC | LED_LOW_ALL)  & ~m;
+                    PORTC = (PORTC | LED_LOW_ALL)  & (uint8_t)~m;
                 }
 			}
 
