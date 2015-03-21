@@ -11,23 +11,22 @@ static uint8_t PrevKeyboardHIDReportBuffer[sizeof(USB_KeyboardReport_Data_t)];
  *  within a device can be differentiated from one another.
  */
 USB_ClassInfo_HID_Device_t Keyboard_HID_Interface =
-	{
-		.Config =
-			{
-				.InterfaceNumber              = INTERFACE_ID_Keyboard,
-				.ReportINEndpoint             =
-					{
-						.Address              = KEYBOARD_EPADDR,
-						.Size                 = KEYBOARD_EPSIZE,
-						.Banks                = 1,
-					},
-				.PrevReportINBuffer           = PrevKeyboardHIDReportBuffer,
-				.PrevReportINBufferSize       = sizeof(PrevKeyboardHIDReportBuffer),
-			},
-	};
+{
+    .Config =
+    {
+        .InterfaceNumber              = INTERFACE_ID_Keyboard,
+        .ReportINEndpoint             =
+        {
+            .Address              = KEYBOARD_EPADDR,
+            .Size                 = KEYBOARD_EPSIZE,
+            .Banks                = 1,
+        },
+        .PrevReportINBuffer           = PrevKeyboardHIDReportBuffer,
+        .PrevReportINBufferSize       = sizeof(PrevKeyboardHIDReportBuffer),
+    },
+}; 
 
 #define LED_MAX_BRIGHT 16
-#define LED_COUNT 1
 #define LED_FREQ 248
 // Precalculate LED values, rather than in the interrupt
 uint8_t led_pwm[LED_MAX_BRIGHT];
@@ -36,9 +35,6 @@ uint8_t fcount = 0;
 uint16_t ticks = 0;
 /* Interrupt triggered by the timer every 5kHz,
  * a simple PWM control of all LEDs.
- * 
- * TODO Change this to stagger LEDs so e.g. if they
- * are set to 20% brightness they are enabled in turn
  */
 ISR(TIMER0_COMPA_vect, ISR_BLOCK)
 {
@@ -48,7 +44,7 @@ ISR(TIMER0_COMPA_vect, ISR_BLOCK)
         count = 0;
         fcount++;
     }
-    if (fcount >= (LED_FREQ>>4))
+    if (fcount >= (LED_FREQ >> 5))
     {
         fcount = 0;
         ticks++;
@@ -62,7 +58,7 @@ void set_led_pwm(const uint8_t led, const uint8_t bright)
     for (uint8_t i = 0; i < LED_MAX_BRIGHT; i++)
     {
         // Shift LED PWM patterns some
-        uint8_t which = i;//(i + (led*3)) % LED_MAX_BRIGHT;
+        uint8_t which = (i + (led*3)) % LED_MAX_BRIGHT;
         if (i < bright)
             led_pwm[which] |= _BV(led);
         else
@@ -71,43 +67,73 @@ void set_led_pwm(const uint8_t led, const uint8_t bright)
 }
     
 bool usb_present = true;
-int caps = 0;
+uint8_t toggle = 0, cycle = 1;
     
 /** Main program entry point. This routine contains the overall program flow, including initial
  *  setup of all components and the main program loop.
  */
 int main(void)
 {
-    uint16_t last = 0;
+    uint16_t next = 0;
     uint8_t idx = 0;
-	SetupHardware();
+    uint8_t pattern_idx = 0;
+    SetupHardware();
 
-	GlobalInterruptEnable();
-	for (;;)
-	{
+    pattern_t current_pattern;
+    if (usb_present)
+    {
+        memcpy_P(&current_pattern, PATTERNS_HI, sizeof(pattern_t));
+    }
+    else
+    {
+        memcpy_P(&current_pattern, PATTERNS_LO, sizeof(pattern_t));
+    }
+    GlobalInterruptEnable();
+    for (;;)
+    {
+        // LED cycling part
+        if (ticks >= next)
+        {
+            uint32_t val = pgm_read_dword_near(&(current_pattern.array[idx]));
+            led_pattern2* tmp = (led_pattern2*)(&val);
+            
+            set_led_pwm(0, tmp->led0);
+            set_led_pwm(1, tmp->led1);
+            set_led_pwm(2, tmp->led2);
+            set_led_pwm(3, tmp->led3);
+            set_led_pwm(4, tmp->led4);
+            
+            idx = (idx + 1) % current_pattern.len;
+            next = ticks + current_pattern.divisor;
+            if (next == 0xffff)
+            {
+                next = 0; // could fuck up GTE check
+            }
+        }
         
         if (usb_present)
         {
             HID_Device_USBTask(&Keyboard_HID_Interface);
             USB_USBTask();
             
-            if (caps)
+            if (toggle)
             {
-                if (last != ticks)
+                if (cycle)
                 {
-                    for (uint8_t i = 0; i < LED_COUNT; i++)
-                    {
-                        set_led_pwm(i, pgm_read_byte_near(&(blink[idx][i])));
-                    }
-                    idx = (idx + 1) % 30;
-                    last = ticks;
+                    pattern_idx = (pattern_idx + 1) % NUM_PATTERNS_HI;
+                    memcpy_P(&current_pattern, PATTERNS_HI+pattern_idx, sizeof(pattern_t));
                 }
+                toggle = 0;
             }
-            else
-                set_led_pwm(0,0);
         }
         else
         {
+            // TODO Need to cycle in here based on time
+            if (0)
+            {
+                pattern_idx = (pattern_idx + 1) % NUM_PATTERNS_LO;
+                memcpy_P(&current_pattern, PATTERNS_LO+pattern_idx, sizeof(pattern_t));
+            }
             sei();
             sleep_cpu();
         }
@@ -264,19 +290,35 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
                                           const void* ReportData,
                                           const uint16_t ReportSize)
 {
-	//uint8_t  LEDMask   = LEDS_NO_LEDS;
-	uint8_t* LEDReport = (uint8_t*)ReportData;
+    static uint8_t caps = 0;
+    uint8_t* LEDReport = (uint8_t*)ReportData;
 
-	//if (*LEDReport & HID_KEYBOARD_LED_NUMLOCK)
-	//  LEDMask |= LEDS_LED1;
-
-	if (*LEDReport & HID_KEYBOARD_LED_CAPSLOCK)
-	    caps=1;
+    // Check for capslock changing state and record it
+    if (*LEDReport & HID_KEYBOARD_LED_CAPSLOCK)
+    {
+        if (!caps)
+        {
+            toggle = 1;
+        }
+        caps = 1;
+    }
     else
-        caps=0;
+    {
+        if (caps)
+        {
+            toggle = 1;
+        }
+        caps = 0;
+    }
 
-	//if (*LEDReport & HID_KEYBOARD_LED_SCROLLLOCK)
-	//  LEDMask |= LEDS_LED4;
+    if (*LEDReport & HID_KEYBOARD_LED_NUMLOCK)
+    {
+        cycle = 0;
+    }
+    else
+    {
+        cycle = 1;
+    }
 
 }
 
