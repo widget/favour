@@ -104,7 +104,7 @@ int main(void)
             set_led_pwm(4, tmp->led4);
             
             idx = (idx + 1) % current_pattern.len;
-            next = ticks + current_pattern.divisor;
+            next = ticks + ((uint16_t)current_pattern.divisor * tmp->count);
             if (next == 0xffff)
             {
                 next = 0; // could fuck up GTE check
