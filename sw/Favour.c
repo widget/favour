@@ -91,7 +91,7 @@ int main(void)
     GlobalInterruptEnable();
     for (;;)
     {
-        // LED cycling part
+        // Actually running through the selected LED pattern here
         if (ticks >= next)
         {
             uint32_t val = pgm_read_dword_near(&(current_pattern.array[idx]));
@@ -116,6 +116,7 @@ int main(void)
             HID_Device_USBTask(&Keyboard_HID_Interface);
             USB_USBTask();
             
+            // Cycle onto the next pattern if caps is toggled and numlock is off
             if (toggle)
             {
                 if (cycle)
@@ -143,17 +144,12 @@ int main(void)
 /** Configures the board hardware and chip peripherals for the demo's functionality. */
 void SetupHardware()
 {
-	/* Disable watchdog if enabled by bootloader/fuses */
-	MCUSR &= ~_BV(WDRF);
-	wdt_disable();
-
-    
-
-	/* Hardware Initialization */
+    /* Disable watchdog if enabled by bootloader/fuses */
+    MCUSR &= ~_BV(WDRF);
+    wdt_disable();
     
     // Disable all pullups
     MCUCR |= _BV(PUD);
-    
     
     Buttons_Init();
     
@@ -161,7 +157,7 @@ void SetupHardware()
     // BUTTONS_VCC will return true when VCC == 3V3
     usb_present = !(Buttons_GetStatus() & BUTTONS_VCC);
     
-	LEDs_Init(usb_present);
+    LEDs_Init(usb_present);
     
     TCNT0  = 0x00; // start value
     TIFR0 = 0; // clear interrupt flags just in case
@@ -211,37 +207,37 @@ void SetupHardware()
 /** Event handler for the library USB Connection event. */
 void EVENT_USB_Device_Connect(void)
 {
-	//LEDs_SetAllLEDs(LEDMASK_USB_ENUMERATING);
+    //LEDs_SetAllLEDs(LEDMASK_USB_ENUMERATING);
 }
 
 /** Event handler for the library USB Disconnection event. */
 void EVENT_USB_Device_Disconnect(void)
 {
-	//LEDs_SetAllLEDs(LEDMASK_USB_NOTREADY);
+    //LEDs_SetAllLEDs(LEDMASK_USB_NOTREADY);
 }
 
 /** Event handler for the library USB Configuration Changed event. */
 void EVENT_USB_Device_ConfigurationChanged(void)
 {
-	bool ConfigSuccess = true;
+    bool ConfigSuccess = true;
 
-	ConfigSuccess &= HID_Device_ConfigureEndpoints(&Keyboard_HID_Interface);
+    ConfigSuccess &= HID_Device_ConfigureEndpoints(&Keyboard_HID_Interface);
 
-	USB_Device_EnableSOFEvents();
+    USB_Device_EnableSOFEvents();
 
-	//LEDs_SetAllLEDs(ConfigSuccess ? LEDMASK_USB_READY : LEDMASK_USB_ERROR);
+    //LEDs_SetAllLEDs(ConfigSuccess ? LEDMASK_USB_READY : LEDMASK_USB_ERROR);
 }
 
 /** Event handler for the library USB Control Request reception event. */
 void EVENT_USB_Device_ControlRequest(void)
 {
-	HID_Device_ProcessControlRequest(&Keyboard_HID_Interface);
+    HID_Device_ProcessControlRequest(&Keyboard_HID_Interface);
 }
 
 /** Event handler for the USB device Start Of Frame event. */
 void EVENT_USB_Device_StartOfFrame(void)
 {
-	HID_Device_MillisecondElapsed(&Keyboard_HID_Interface);
+    HID_Device_MillisecondElapsed(&Keyboard_HID_Interface);
 }
 
 /** HID class driver callback function for the creation of HID reports to the host.
@@ -260,20 +256,20 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
                                          void* ReportData,
                                          uint16_t* const ReportSize)
 {
-	USB_KeyboardReport_Data_t* KeyboardReport = (USB_KeyboardReport_Data_t*)ReportData;
+    USB_KeyboardReport_Data_t* KeyboardReport = (USB_KeyboardReport_Data_t*)ReportData;
 
-	uint8_t ButtonStatus_LCL = Buttons_GetStatus();
+    uint8_t ButtonStatus_LCL = Buttons_GetStatus();
 
-	uint8_t UsedKeyCodes = 0;
+    uint8_t UsedKeyCodes = 0;
 
-	if (ButtonStatus_LCL & BUTTONS_HWB)
-	  KeyboardReport->KeyCode[UsedKeyCodes++] = HID_KEYBOARD_SC_F;
+    if (ButtonStatus_LCL & BUTTONS_HWB)
+        KeyboardReport->KeyCode[UsedKeyCodes++] = HID_KEYBOARD_SC_F;
 
-	if (UsedKeyCodes)
-	  KeyboardReport->Modifier = HID_KEYBOARD_MODIFIER_LEFTSHIFT;
+    if (UsedKeyCodes)
+        KeyboardReport->Modifier = HID_KEYBOARD_MODIFIER_LEFTSHIFT;
 
-	*ReportSize = sizeof(USB_KeyboardReport_Data_t);
-	return false;
+    *ReportSize = sizeof(USB_KeyboardReport_Data_t);
+    return false;
 }
 
 /** HID class driver callback function for the processing of HID reports from the host.
@@ -311,6 +307,8 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
         caps = 0;
     }
 
+    // Check numlock and record it.  Was going to use scroll lock but
+    // that doesn't appear to actually get sent on Linux
     if (*LEDReport & HID_KEYBOARD_LED_NUMLOCK)
     {
         cycle = 0;
