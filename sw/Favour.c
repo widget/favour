@@ -68,6 +68,7 @@ void set_led_pwm(const uint8_t led, const uint8_t bright)
     
 bool usb_present = true;
 uint8_t toggle = 0, cycle = 1;
+uint8_t pattern_count = 0;
     
 /** Main program entry point. This routine contains the overall program flow, including initial
  *  setup of all components and the main program loop.
@@ -103,7 +104,12 @@ int main(void)
             set_led_pwm(3, tmp->led3);
             set_led_pwm(4, tmp->led4);
             
-            idx = (idx + 1) % current_pattern.len;
+            idx++;
+            if (idx == current_pattern.len)
+            {
+                idx = 0;
+                pattern_count++;
+            }
             next = ticks + ((uint16_t)current_pattern.divisor * tmp->count);
             if (next == 0xffff)
             {
@@ -121,19 +127,24 @@ int main(void)
             {
                 if (cycle)
                 {
+                    // Next pattern
                     pattern_idx = (pattern_idx + 1) % NUM_PATTERNS_HI;
+                    // Copy it in
                     memcpy_P(&current_pattern, PATTERNS_HI+pattern_idx, sizeof(pattern_t));
+                    // And restart
+                    idx = 0;
                 }
                 toggle = 0;
             }
         }
         else
         {
-            // TODO Need to cycle in here based on time
-            if (0)
+            if (pattern_count == 150)
             {
                 pattern_idx = (pattern_idx + 1) % NUM_PATTERNS_LO;
                 memcpy_P(&current_pattern, PATTERNS_LO+pattern_idx, sizeof(pattern_t));
+                idx = 0;
+                pattern_count = 0;
             }
             sei();
             sleep_cpu();
@@ -153,6 +164,9 @@ void SetupHardware()
     
     Buttons_Init();
     
+    // TODO may need to delay here a bit, the VCC line can be held high
+    // by capacitance.  Resistors may be too high.
+    
     // Check if we're on USB or battery,
     // BUTTONS_VCC will return true when VCC == 3V3
     usb_present = !(Buttons_GetStatus() & BUTTONS_VCC);
@@ -170,7 +184,7 @@ void SetupHardware()
         clock_prescale_set(clock_div_1);
         USB_Init();
         
-        OCR0A  =   62; // 4.96kHz
+        OCR0A  =   33; // 4.96kHz
         // set timer0 to be 16MHz/64 = 8andabit kHz
         TCCR0B = 0x03;
     }
