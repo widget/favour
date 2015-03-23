@@ -30,6 +30,18 @@ const led_pattern2 blink[] PROGMEM = {
     {13,  0,  0,  0,  0, .count =  1},
     { 2,  0,  0,  0,  0, .count =  1},
     { 0,  0,  0,  0,  0, .count = 20},
+    { 0,  0,  0,  0,  2, .count = 1},
+    { 0,  0,  0,  0, 12, .count = 1},
+    { 0,  0,  0,  0,  5, .count = 1},
+    { 0,  0,  0,  0,  0, .count = 25},
+    { 0,  0, 12,  0,  0, .count = 1},
+    { 0,  0,  2,  0,  0, .count = 1},
+    { 0,  0,  6,  0,  0, .count = 1},
+    { 0,  0,  0,  0,  0, .count = 20},
+    { 0,  1,  0,  0,  0, .count = 1},
+    { 0,  8,  0,  0,  0, .count = 1},
+    { 0,  4,  0,  0,  0, .count = 1},
+    { 0,  0,  0,  0,  0, .count = 10},
     { 0,  0,  0, 12,  0, .count =  1},
     { 0,  0,  0,  2,  0, .count =  1},
     { 0,  0,  0, 15,  0, .count =  1},
@@ -41,40 +53,35 @@ const led_pattern2 blink[] PROGMEM = {
 //_Static_assert(sizeof(led_pattern) == 5, "led_pattern is not 5");
 //_Static_assert((sizeof(blink)/sizeof(led_pattern)) == 32, "blink is not 32");
 
-const led_pattern2 off[] PROGMEM = {
-    { 0,  0,  0,  0,  0, .count =  1},
-    { 0,  0,  0,  0,  0, .count =  1},
-};
-
 const led_pattern2 all_fade[] PROGMEM = {
-    { 1,  1,  1,  0,  0, .count =  12},
-    { 2,  2,  2,  0,  0, .count =  1},
-    { 3,  3,  3,  0,  0, .count =  1},
-    { 4,  4,  4,  0,  0, .count =  1},
-    { 5,  5,  5,  0,  0, .count =  1},
-    { 6,  6,  6,  0,  0, .count =  1},
-    { 7,  7,  7,  0,  0, .count =  1},
-    { 8,  8,  8,  0,  0, .count =  1},
-    { 9,  9,  9,  0,  0, .count =  1},
-    {10, 10, 10,  0,  0, .count =  1},
-    {11, 11, 11,  0,  0, .count =  1},
-    {12, 12, 12,  0,  0, .count =  1},
-    {13, 13, 13,  0,  0, .count =  1},
-    {14, 14, 14,  0,  0, .count =  1},
-    {15, 15, 15,  0,  0, .count =  6},
-    {14, 14, 14,  0,  0, .count =  1},
-    {13, 13, 13,  0,  0, .count =  1},
-    {12, 12, 12,  0,  0, .count =  1},
-    {11, 11, 11,  0,  0, .count =  1},
-    {10, 10, 10,  0,  0, .count =  1},
-    { 9,  9,  9,  0,  0, .count =  1},
-    { 8,  8,  8,  0,  0, .count =  1},
-    { 7,  7,  7,  0,  0, .count =  1},
-    { 6,  6,  6,  0,  0, .count =  1},
-    { 5,  5,  5,  0,  0, .count =  1},
-    { 4,  4,  4,  0,  0, .count =  1},
-    { 3,  3,  3,  0,  0, .count =  1},
-    { 2,  2,  2,  0,  0, .count =  1},
+    { 1,  1,  0,  1,  1, .count =  12},
+    { 2,  2,  0,  2,  2, .count =  1},
+    { 3,  3,  0,  3,  3, .count =  1},
+    { 4,  4,  0,  4,  4, .count =  1},
+    { 5,  5,  0,  5,  5, .count =  1},
+    { 6,  6,  0,  6,  6, .count =  1},
+    { 7,  7,  0,  7,  7, .count =  1},
+    { 8,  8,  0,  8,  8, .count =  1},
+    { 9,  9,  0,  9,  9, .count =  1},
+    {10, 10,  0, 10, 10, .count =  1},
+    {11, 11,  0, 11, 11, .count =  1},
+    {12, 12,  0, 12, 12, .count =  1},
+    {13, 13,  0, 13, 13, .count =  1},
+    {14, 14,  0, 14, 14, .count =  1},
+    {15, 15,  0, 15, 15, .count =  6},
+    {14, 14,  0, 14, 14, .count =  1},
+    {13, 13,  0, 13, 13, .count =  1},
+    {12, 12,  0, 12, 12, .count =  1},
+    {11, 11,  0, 11, 11, .count =  1},
+    {10, 10,  0, 10, 10, .count =  1},
+    { 9,  9,  0,  9,  9, .count =  1},
+    { 8,  8,  0,  8,  8, .count =  1},
+    { 7,  7,  0,  7,  7, .count =  1},
+    { 6,  6,  0,  6,  6, .count =  1},
+    { 5,  5,  0,  5,  5, .count =  1},
+    { 4,  4,  0,  4,  4, .count =  1},
+    { 3,  3,  0,  3,  3, .count =  1},
+    { 2,  2,  0,  2,  2, .count =  1},
 };
 
 const led_pattern2 middle_fade[] PROGMEM = {
@@ -108,6 +115,14 @@ const led_pattern2 middle_fade[] PROGMEM = {
     { 0,  0,  0,  0,  2, .count =  1},
 };
 
+/* Pattern ideas
+ * 
+ * - fade each LED on and off in turn to give a rotating effect (a pair for hi power?)
+ * - perlin noise
+ * - other twinkle effect like blink?
+ * - light up one corner, then the diagonal, then the other corner, in turn
+ */
+
 const pattern_t PATTERNS_HI[] PROGMEM = 
 {
     {
@@ -119,12 +134,7 @@ const pattern_t PATTERNS_HI[] PROGMEM =
         .array = all_fade,
         .len = sizeof(all_fade)/sizeof(led_pattern2),
         .divisor = 4,
-    },
-    {
-        .array = off,
-        .len = sizeof(off)/sizeof(led_pattern2),
-        .divisor = 2,
-    }        
+    }     
 };
 
 #define NUM_PATTERNS_HI (sizeof(PATTERNS_HI)/sizeof(pattern_t))
@@ -136,11 +146,6 @@ const pattern_t PATTERNS_LO[] PROGMEM =
         .len = sizeof(blink)/sizeof(led_pattern2),
         .divisor = 2,
     },
-    {
-        .array = off,
-        .len = sizeof(off)/sizeof(led_pattern2),
-        .divisor = 2
-    }, 
     {
         .array = middle_fade,
         .len = sizeof(middle_fade)/sizeof(led_pattern2),
