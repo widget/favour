@@ -26,6 +26,7 @@ USB_ClassInfo_HID_Device_t Keyboard_HID_Interface =
     },
 }; 
 
+// TODO change to 31
 #define LED_MAX_BRIGHT 16
 #define LED_FREQ 248
 // Precalculate LED values, rather than in the interrupt
@@ -65,10 +66,12 @@ void set_led_pwm(const uint8_t led, const uint8_t bright)
             led_pwm[which] &= (uint8_t)~_BV(led);
     }
 }
-    
-bool usb_present = true;
-uint8_t toggle = 0, cycle = 1;
-uint8_t pattern_count = 0;
+
+// default to zero, save ram, the AVR way
+bool usb_present = true, hwb_last;
+uint16_t last_press;
+bool toggle;
+uint8_t pattern_count;
     
 /** Main program entry point. This routine contains the overall program flow, including initial
  *  setup of all components and the main program loop.
@@ -125,16 +128,14 @@ int main(void)
             // Cycle onto the next pattern if caps is toggled and numlock is off
             if (toggle)
             {
-                if (cycle)
-                {
-                    // Next pattern
-                    pattern_idx = (pattern_idx + 1) % NUM_PATTERNS_HI;
-                    // Copy it in
-                    memcpy_P(&current_pattern, PATTERNS_HI+pattern_idx, sizeof(pattern_t));
-                    // And restart
-                    idx = 0;
-                }
-                toggle = 0;
+                // Next pattern
+                pattern_idx = (pattern_idx + 1) % NUM_PATTERNS_HI;
+                // Copy it in
+                memcpy_P(&current_pattern, PATTERNS_HI+pattern_idx, sizeof(pattern_t));
+                // And restart
+                idx = 0;
+                
+                toggle = false;
             }
         }
         else
@@ -148,6 +149,30 @@ int main(void)
             }
             sei();
             sleep_cpu();
+        }
+        
+        // TODO Check if HWB is pressed, and cycle pattern based on it
+        if (Buttons_GetStatus() & BUTTONS_HWB)
+        {
+            // check it was unpressed last cycle
+            // and that we haven't done this in the last 2 ticks
+            if (!hwb_last && (last_press != ticks))
+            {
+                toggle = true;
+                last_press = ticks;
+                hwb_last = true;
+            }
+        }
+        else
+        {
+            hwb_last = false;
+        }
+        
+        // Check power hasn't changed
+        bool new_usb_present = !(Buttons_GetStatus() & BUTTONS_VCC);
+        if (usb_present != new_usb_present)
+        {
+            // RESET
         }
 	}
 }
@@ -164,8 +189,9 @@ void SetupHardware()
     
     Buttons_Init();
     
-    // TODO may need to delay here a bit, the VCC line can be held high
-    // by capacitance.  Resistors may be too high.
+    // need to delay here 50ms, the VCC line can be held high
+    // by capacitance.
+    _delay_ms(50);
     
     // Check if we're on USB or battery,
     // BUTTONS_VCC will return true when VCC == 3V3
@@ -192,6 +218,9 @@ void SetupHardware()
     {
         // once tested, try 128
         clock_prescale_set(clock_div_8);
+        
+        USB_Disable();
+        
         power_usb_disable();
         power_spi_disable();
         power_timer1_disable();
@@ -199,7 +228,7 @@ void SetupHardware()
         // disable analogue comparator
         ACSR |= _BV(ACD);
         
-        // we need to disable BOD and debug fuses
+        // TODO we need to disable BOD and debug fuses
         
         if (bit_is_set(CLKSEL0,CLKS))
         {
@@ -276,11 +305,11 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
 
     uint8_t UsedKeyCodes = 0;
 
-    if (ButtonStatus_LCL & BUTTONS_HWB)
+    /*if (ButtonStatus_LCL & BUTTONS_HWB)
         KeyboardReport->KeyCode[UsedKeyCodes++] = HID_KEYBOARD_SC_F;
 
     if (UsedKeyCodes)
-        KeyboardReport->Modifier = HID_KEYBOARD_MODIFIER_LEFTSHIFT;
+        KeyboardReport->Modifier = HID_KEYBOARD_MODIFIER_LEFTSHIFT;*/
 
     *ReportSize = sizeof(USB_KeyboardReport_Data_t);
     return false;
@@ -300,37 +329,21 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
                                           const void* ReportData,
                                           const uint16_t ReportSize)
 {
-    static uint8_t caps = 0;
+    static bool caps = false;
     uint8_t* LEDReport = (uint8_t*)ReportData;
 
-    // Check for capslock changing state and record it
+    // Check for capslock turning on
     if (*LEDReport & HID_KEYBOARD_LED_CAPSLOCK)
     {
         if (!caps)
         {
-            toggle = 1;
+            toggle = true;
         }
-        caps = 1;
+        caps = true;
     }
     else
     {
-        if (caps)
-        {
-            toggle = 1;
-        }
-        caps = 0;
+        caps = false;
     }
-
-    // Check numlock and record it.  Was going to use scroll lock but
-    // that doesn't appear to actually get sent on Linux
-    if (*LEDReport & HID_KEYBOARD_LED_NUMLOCK)
-    {
-        cycle = 0;
-    }
-    else
-    {
-        cycle = 1;
-    }
-
 }
 
