@@ -91,9 +91,8 @@ const led_pattern2 all_fade[] PROGMEM = {
     { 5,  5,  0,  5,  5, .count =  1},
     { 4,  4,  0,  4,  4, .count =  1},
     { 3,  3,  0,  3,  3, .count =  1},
-    { 3,  2,  0,  3,  2, .count =  1},
     { 2,  2,  0,  2,  2, .count =  1},
-    { 1,  2,  0,  1,  2, .count =  1},
+    { 1,  1,  0,  1,  1, .count =  1},
 };
 
 const led_pattern2 middle_fade[] PROGMEM = {
@@ -423,7 +422,9 @@ const led_pattern2 binary[] PROGMEM = {
 
 #ifdef TEST_PATTERN
 const led_pattern2 one_on[] PROGMEM = {
-    { 16,  0,  0,  0,  0, .count = 2}
+    { 16,  0,  0,  0,  0, .count = 20}
+    //{ 31,  0,  0,  0,  0, .count = 1},
+    //{ 0,  0,  0,  0,  0, .count = 1}
 };
 #endif
 
@@ -440,14 +441,14 @@ const led_pattern2 one_on[] PROGMEM = {
 const pattern_t PATTERNS_HI[] PROGMEM = 
 {
 #ifdef TEST_PATTERN
-    PATTERN_ENTRY(one_on, 1),
+    PATTERN_ENTRY(one_on, 4),
 #endif
+    PATTERN_ENTRY(one_circle, 2),
     PATTERN_ENTRY(perlin_hi, 2),
     PATTERN_ENTRY(binary, 3),
     PATTERN_ENTRY(two_circle, 2),
     PATTERN_ENTRY(all_fade, 3),
     PATTERN_ENTRY(blink, 2),
-    PATTERN_ENTRY(one_circle, 2),
 };
 
 #define NUM_PATTERNS_HI (sizeof(PATTERNS_HI)/sizeof(pattern_t))
@@ -455,11 +456,11 @@ const pattern_t PATTERNS_HI[] PROGMEM =
 const pattern_t PATTERNS_LO[] PROGMEM = 
 {
 #ifdef TEST_PATTERN
-    PATTERN_ENTRY(one_on, 1),
+    PATTERN_ENTRY(one_on, 4),
 #endif
+    PATTERN_ENTRY(one_circle, 2),
     PATTERN_ENTRY(perlin_lo, 2),
     PATTERN_ENTRY(blink, 2),
-    PATTERN_ENTRY(one_circle, 2),
     PATTERN_ENTRY(middle_fade, 4)
 };
 

@@ -53,7 +53,7 @@ ISR(TIMER0_COMPA_vect, ISR_BLOCK)
         count = 0;
         fcount++;
     }
-    if (fcount >= (LED_FREQ >> 6))
+    if (fcount >= 2)
     {
         fcount = 0;
         ticks++;
@@ -62,25 +62,41 @@ ISR(TIMER0_COMPA_vect, ISR_BLOCK)
     LEDs_SetAllLEDs(led_pwm[count]);
 }
 
+#ifdef GAMMA_CORRECTION
+// This also requires the PWM to be a period of 64
+const uint8_t PROGMEM gamma10_lut[32] = {0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,
+                                          34,36,38,40,42,44,46,48,50,52,54,56,58,60,62};
+
+const uint8_t PROGMEM gamma12_lut[32] = {0,1,2,3,5, 6, 8,10,12,13,15,17,19,21,23,25,27,
+                                          29,32,34,36,38,40,43,45,47,49,52,54,56,59,62};
+#endif
+
 void set_led_pwm(const uint8_t led, const uint8_t bright)
 {
+    //uint8_t val = pgm_read_byte_near(gamma12_lut + bright);
+    const uint8_t led_on = _BV(led);
+    const uint8_t led_off = ~led_on;
+    
     for (uint8_t i = 0; i < LED_MAX_BRIGHT; i++)
     {
+#ifdef STAGGER_LED_PWM
         // Shift LED PWM patterns some
         uint8_t which = (i + (led*3)) % LED_MAX_BRIGHT;
+#else
+        uint8_t which = i;
+#endif
         if (i < bright)
-            led_pwm[which] |= _BV(led);
+            led_pwm[which] |= led_on;
         else
-            led_pwm[which] &= (uint8_t)~_BV(led);
+            led_pwm[which] &= led_off;
     }
 }
 
-// default to zero, save ram, the AVR way
-bool vusb_present = true, hwb_last;
+bool vusb_present = true, hwb_last = false;
 bool hid_present = false;
-uint16_t last_press;
-bool toggle;
-uint8_t pattern_count;
+uint16_t last_press = 0;
+bool toggle = false;
+uint8_t pattern_count = 0;
 
 uint8_t set_pattern_get_next(pattern_t *pt, uint8_t idx)
 {
@@ -145,35 +161,8 @@ int main(void)
             USB_USBTask();
         }
         
-        if (hid_present)
-        {
-            // Cycle onto the next pattern if caps is toggled
-            if (toggle)
-            {
-                // Next pattern
-                pattern_idx = set_pattern_get_next(&current_pattern, pattern_idx);
-                // And restart
-                idx = 0;
-                next = 0;
-                toggle = false;
-            }
-        }
-        else
-        {
-            if ((pattern_count == 150) || toggle)
-            {
-                pattern_idx = set_pattern_get_next(&current_pattern, pattern_idx);
-                
-                idx = 0;                // Start at the beginning of the cycle
-                pattern_count = 0;      // Start the timer again
-                next = 0;               // Trigger cycle to start now
-                
-                toggle = false;
-            }
-            sei();
-            sleep_cpu();
-        }
-        
+#ifdef BUTTON_CYCLE_PATTERN
+        // Permit the button to toggle us round
         if (Buttons_GetStatus() & BUTTONS_HWB)
         {
             // check it was unpressed last cycle
@@ -189,6 +178,7 @@ int main(void)
         {
             hwb_last = false;
         }
+#endif
         
         // Check power hasn't changed.  But VUSB doesn't tell us if we're running
         // on VUSB, just that it's present!
@@ -198,6 +188,38 @@ int main(void)
             // RESET
             soft_reset();
         }
+        
+        if (hid_present)
+        {
+            // Cycle onto the next pattern if caps is toggled
+            if (toggle)
+            {
+                // Next pattern
+                pattern_idx = set_pattern_get_next(&current_pattern, pattern_idx);
+                // And restart
+                idx = 0;
+                next = 0;
+                toggle = false;
+            }
+        }
+        else // battery mode
+        {
+            if ((pattern_count == 150) || toggle)
+            {
+                pattern_idx = set_pattern_get_next(&current_pattern, pattern_idx);
+                
+                idx = 0;                // Start at the beginning of the cycle
+                pattern_count = 0;      // Start the timer again
+                next = 0;               // Trigger cycle to start now
+                
+                toggle = false;
+            }
+            
+            // only sleep in battery mode
+            sei();
+            sleep_cpu();
+        }
+        
 	}
 }
 
@@ -266,8 +288,8 @@ void SetupHardware()
         set_sleep_mode(SLEEP_MODE_IDLE);
         sleep_enable();
         
-        OCR0A  =   123; // 4096Hz
-        // Set timer0 to be 8/(8*1) - 125kHz
+        OCR0A  =   119; // 4096Hz
+        // Set timer0 to be 8/(16*1) - 125kHz
         TCCR0B = 0x01;
     }
     
