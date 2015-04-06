@@ -1,7 +1,6 @@
 
 #define LED_COUNT 5
 
-typedef uint8_t led_pattern[LED_COUNT];
 typedef struct
 {
     unsigned int led0:5;
@@ -10,19 +9,19 @@ typedef struct
     unsigned int led3:5;
     unsigned int led4:5;
     unsigned int count:5;
-} led_pattern2;
+} led_pattern;
 
-_Static_assert(sizeof(led_pattern2) == 4, "led_pattern2 is not 4");
+_Static_assert(sizeof(led_pattern) == 4, "led_pattern is not 4");
 
 typedef struct 
 {
-    const led_pattern2* array;
+    const led_pattern* array;
     uint8_t len;
     uint8_t divisor;
 } pattern_t;
 
 
-const led_pattern2 blink[] PROGMEM = {
+const led_pattern blink[] PROGMEM = {
     {12,  0,  0,  0,  0, .count =  1},
     { 2,  0,  0,  0,  0, .count =  1},
     {15,  0,  0,  0,  0, .count =  1},
@@ -30,17 +29,17 @@ const led_pattern2 blink[] PROGMEM = {
     {13,  0,  0,  0,  0, .count =  1},
     { 2,  0,  0,  0,  0, .count =  1},
     { 0,  0,  0,  0,  0, .count = 20},
-    { 0,  0,  0,  0,  2, .count = 1},
-    { 0,  0,  0,  0, 12, .count = 1},
-    { 0,  0,  0,  0,  5, .count = 1},
+    { 0,  0,  0,  0,  2, .count =  1},
+    { 0,  0,  0,  0, 12, .count =  1},
+    { 0,  0,  0,  0,  5, .count =  1},
     { 0,  0,  0,  0,  0, .count = 25},
-    { 0,  0, 12,  0,  0, .count = 1},
-    { 0,  0,  2,  0,  0, .count = 1},
-    { 0,  0,  6,  0,  0, .count = 1},
+    { 0,  0, 12,  0,  0, .count =  1},
+    { 0,  0,  2,  0,  0, .count =  1},
+    { 0,  0,  6,  0,  0, .count =  1},
     { 0,  0,  0,  0,  0, .count = 20},
-    { 0,  1,  0,  0,  0, .count = 1},
-    { 0,  8,  0,  0,  0, .count = 1},
-    { 0,  4,  0,  0,  0, .count = 1},
+    { 0,  1,  0,  0,  0, .count =  1},
+    { 0,  8,  0,  0,  0, .count =  1},
+    { 0,  4,  0,  0,  0, .count =  1},
     { 0,  0,  0,  0,  0, .count = 10},
     { 0,  0,  0, 12,  0, .count =  1},
     { 0,  0,  0,  2,  0, .count =  1},
@@ -50,10 +49,83 @@ const led_pattern2 blink[] PROGMEM = {
     { 0,  0,  0,  0,  0, .count = 10},
 };
 
+const led_pattern blink_more[] PROGMEM = {
+    {12,  0,  0,  0,  0, .count =  1},
+    { 2,  0,  0,  0,  0, .count =  1},
+    {18,  2,  0,  0,  0, .count =  1},
+    { 0, 10,  0,  0,  0, .count =  1},
+    { 0,  2,  0,  0,  0, .count =  1},
+    { 0,  0,  0,  0,  1, .count =  1},
+    { 0,  0,  0,  0,  0, .count =  1},
+    { 0,  0,  0, 30,  0, .count =  1},
+    { 0,  0,  0,  0,  0, .count =  1},
+    { 0,  0,  0,  0,  0, .count =  8},
+    { 0,  0,  0,  0,  1, .count =  1},
+    { 1,  0,  0,  0,  0, .count =  1},
+    {30,  0,  0,  0,  0, .count =  1},
+    { 6,  0,  0,  0,  0, .count =  1},
+    { 0,  0,  0,  0,  0, .count =  1},
+    { 0,  0,  3,  0,  0, .count =  1},
+    { 0,  0,  0,  0,  0, .count =  1},
+    { 0, 10,  0,  0,  0, .count =  1},
+    { 0, 30,  0,  0,  0, .count =  1},
+    { 0, 10,  0,  0,  0, .count =  1},
+    { 0,  0,  0,  0,  0, .count =  8},
+    { 0,  0, 10,  0,  0, .count =  1},
+    { 0,  0,  0,  0,  0, .count =  1},
+    { 0,  0, 10,  0,  0, .count =  1},
+    { 0,  0,  0,  0,  0, .count =  1},
+    { 0,  0, 10,  0,  0, .count =  1},
+    { 0,  0,  0,  0,  0, .count =  8},
+    { 0,  8,  0,  0,  0, .count =  1},
+    { 0, 18,  0,  0,  0, .count =  1},
+    { 0,  0,  0,  0,  0, .count =  1},
+    { 0,  0,  0,  2,  0, .count =  1},
+    { 0,  0,  0, 12,  0, .count =  1},
+    { 0,  0,  0,  8,  0, .count =  1},
+    { 0,  0,  0,  2,  0, .count =  1},
+    { 0,  0,  0,  0,  3, .count =  1},
+    { 0,  0,  0,  0, 13, .count =  1},
+    { 2,  0,  0,  0,  0, .count =  1},
+    {18,  0,  0,  0,  0, .count =  1},
+    { 2,  0,  0,  0,  0, .count =  1},
+    {14,  0,  0,  0,  0, .count =  1},
+    { 3,  0,  0,  0,  0, .count =  1},
+    { 0,  0,  0,  0,  0, .count =  8},
+    { 0, 30,  0,  0,  0, .count =  1},
+    { 0,  0,  0,  0,  0, .count =  1},
+    { 0,  0,  0,  0,  2, .count =  1},
+    { 0,  0,  0,  0, 12, .count =  1},
+    { 0,  0,  0,  0,  2, .count =  1},
+    { 0,  0,  0,  0, 20, .count =  1},
+    { 0,  0,  0,  0,  0, .count =  6},
+    { 1,  0,  8,  0,  0, .count =  1},
+    { 0,  0,  0,  0,  0, .count =  1},
+    { 0,  0,  2,  0,  0, .count =  1},
+    { 0,  0,  8,  0,  0, .count =  1},
+    { 0,  3,  0,  0,  0, .count =  1},
+    { 0,  4,  0,  4,  0, .count =  1},
+    { 0,  0,  0,  3,  0, .count =  1},
+    { 0,  0,  0,  0,  0, .count =  1},
+    { 4,  0,  0,  0,  0, .count =  1},
+    { 8,  0,  0,  0,  0, .count =  1},
+    { 1,  0,  0,  0,  0, .count =  1},
+    { 0,  0,  0,  0,  0, .count =  8},
+    { 0,  0,  0,  0,  3, .count =  1},
+    { 0,  0, 20,  0,  0, .count =  1},
+    { 0,  0,  2,  0,  0, .count =  1},
+    { 0,  0,  0,  0,  3, .count =  1},
+    {30,  0,  0,  0,  0, .count =  1},
+    { 0,  1,  0,  0,  8, .count =  1},
+    { 0, 20,  0,  0,  0, .count =  1},
+    { 0,  1,  0,  0,  0, .count =  1},
+};
+    
+    
 //_Static_assert(sizeof(led_pattern) == 5, "led_pattern is not 5");
 //_Static_assert((sizeof(blink)/sizeof(led_pattern)) == 32, "blink is not 32");
 
-const led_pattern2 all_fade[] PROGMEM = {
+const led_pattern all_fade[] PROGMEM = {
     { 1,  1,  0,  1,  1, .count = 26},
     { 2,  2,  0,  2,  2, .count =  1},
     { 3,  3,  0,  3,  3, .count =  1},
@@ -95,7 +167,7 @@ const led_pattern2 all_fade[] PROGMEM = {
     { 1,  1,  0,  1,  1, .count =  1},
 };
 
-const led_pattern2 middle_fade[] PROGMEM = {
+const led_pattern middle_fade[] PROGMEM = {
     { 0,  0,  1,  0,  0, .count = 12},
     { 0,  0,  2,  0,  0, .count =  1},
     { 0,  0,  3,  0,  0, .count =  1},
@@ -106,29 +178,59 @@ const led_pattern2 middle_fade[] PROGMEM = {
     { 0,  0,  8,  0,  0, .count =  1},
     { 0,  0,  9,  0,  0, .count =  1},
     { 0,  0, 10,  0,  0, .count =  1},
+    { 0,  0, 11,  0,  0, .count =  1},
     { 0,  0, 12,  0,  0, .count =  1},
     { 0,  0, 13,  0,  0, .count =  1},
+    { 0,  0, 14,  0,  0, .count =  1},
     { 0,  0, 15,  0,  0, .count =  1},
     { 0,  0, 16,  0,  0, .count =  1},
+    { 0,  0, 17,  0,  0, .count =  1},
     { 0,  0, 18,  0,  0, .count =  1},
+    { 0,  0, 19,  0,  0, .count =  1},
     { 0,  0, 20,  0,  0, .count =  1},
+    { 0,  0, 21,  0,  0, .count =  1},
     { 0,  0, 22,  0,  0, .count =  1},
+    { 0,  0, 23,  0,  0, .count =  1},
+    { 0,  0, 24,  0,  0, .count =  1},
     { 0,  0, 25,  0,  0, .count =  1},
+    { 0,  0, 26,  0,  0, .count =  1},
+    { 0,  0, 27,  0,  0, .count =  1},
     { 0,  0, 28,  0,  0, .count =  1},
-    { 0,  0, 31,  0,  0, .count =  8},
+    { 0,  0, 29,  0,  0, .count =  1},
+    { 0,  0, 30,  0,  0, .count =  1},
+    { 0,  0, 31,  0,  0, .count = 18},
+    { 0,  0, 30,  0,  0, .count =  1},
+    { 0,  0, 29,  0,  0, .count =  1},
+    { 0,  0, 28,  0,  0, .count =  1},
+    { 0,  0, 27,  0,  0, .count =  1},
+    { 0,  0, 26,  0,  0, .count =  1},
     { 0,  0, 25,  0,  0, .count =  1},
+    { 0,  0, 24,  0,  0, .count =  1},
+    { 0,  0, 23,  0,  0, .count =  1},
+    { 0,  0, 22,  0,  0, .count =  1},
+    { 0,  0, 21,  0,  0, .count =  1},
     { 0,  0, 20,  0,  0, .count =  1},
+    { 0,  0, 19,  0,  0, .count =  1},
+    { 0,  0, 18,  0,  0, .count =  1},
+    { 0,  0, 17,  0,  0, .count =  1},
     { 0,  0, 16,  0,  0, .count =  1},
+    { 0,  0, 15,  0,  0, .count =  1},
+    { 0,  0, 14,  0,  0, .count =  1},
     { 0,  0, 13,  0,  0, .count =  1},
+    { 0,  0, 12,  0,  0, .count =  1},
+    { 0,  0, 11,  0,  0, .count =  1},
     { 0,  0, 10,  0,  0, .count =  1},
+    { 0,  0,  9,  0,  0, .count =  1},
+    { 0,  0,  8,  0,  0, .count =  1},
     { 0,  0,  7,  0,  0, .count =  1},
+    { 0,  0,  6,  0,  0, .count =  1},
     { 0,  0,  5,  0,  0, .count =  1},
     { 0,  0,  4,  0,  0, .count =  1},
     { 0,  0,  3,  0,  0, .count =  1},
     { 0,  0,  2,  0,  0, .count =  1},
 };
 
-const led_pattern2 one_circle[] PROGMEM = {
+const led_pattern one_circle[] PROGMEM = {
     { 1,  0,  0,  0, 12, .count = 1},
     { 2,  0,  0,  0,  9, .count = 1},
     { 6,  0,  0,  0,  6, .count = 1},
@@ -151,7 +253,7 @@ const led_pattern2 one_circle[] PROGMEM = {
     { 0,  0,  0,  1, 12, .count = 1},
 };
 
-const led_pattern2 two_circle[] PROGMEM = {
+const led_pattern two_circle[] PROGMEM = {
     { 1, 12,  0,  1, 12, .count = 1},
     { 2,  9,  0,  2,  9, .count = 1},
     { 6,  5,  0,  6,  5, .count = 1},
@@ -174,22 +276,22 @@ const led_pattern2 two_circle[] PROGMEM = {
     { 0, 12,  0,  0, 12, .count = 1},
 };
 
-const led_pattern2 perlin_hi[] PROGMEM = 
+const led_pattern perlin_hi[] PROGMEM = 
 {
     {11, 18, 14, 17, 11, .count = 1},
     {11, 18, 15, 19, 10, .count = 1},
-    {11, 17, 16, 19, 9, .count = 1},
-    {10, 17, 16, 19, 9, .count = 1},
-    {8, 17, 17, 19, 10, .count = 1},
-    {7, 17, 17, 19, 10, .count = 1},
-    {6, 17, 17, 21, 9, .count = 1},
-    {6, 17, 16, 22, 8, .count = 1},
-    {5, 18, 16, 23, 8, .count = 1},
-    {4, 18, 16, 24, 9, .count = 1},
-    {4, 17, 16, 24, 11, .count = 1},
-    {5, 16, 15, 23, 12, .count = 1},
-    {6, 15, 14, 22, 12, .count = 1},
-    {8, 14, 13, 21, 12, .count = 1},
+    {11, 17, 16, 19,  9, .count = 1},
+    {10, 17, 16, 19,  9, .count = 1},
+    { 8, 17, 17, 19, 10, .count = 1},
+    { 7, 17, 17, 19, 10, .count = 1},
+    { 6, 17, 17, 21,  9, .count = 1},
+    { 6, 17, 16, 22,  8, .count = 1},
+    { 5, 18, 16, 23,  8, .count = 1},
+    { 4, 18, 16, 24,  9, .count = 1},
+    { 4, 17, 16, 24, 11, .count = 1},
+    { 5, 16, 15, 23, 12, .count = 1},
+    { 6, 15, 14, 22, 12, .count = 1},
+    { 8, 14, 13, 21, 12, .count = 1},
     {10, 13, 12, 20, 12, .count = 1},
     {12, 12, 11, 19, 12, .count = 1},
     {14, 13, 11, 18, 13, .count = 1},
@@ -198,33 +300,33 @@ const led_pattern2 perlin_hi[] PROGMEM =
     {15, 18, 13, 15, 14, .count = 1},
     {16, 19, 13, 13, 14, .count = 1},
     {16, 21, 13, 11, 14, .count = 1},
-    {17, 22, 13, 9, 14, .count = 1},
-    {19, 21, 14, 8, 13, .count = 1},
-    {20, 21, 15, 8, 13, .count = 1},
-    {21, 20, 17, 8, 13, .count = 1},
-    {22, 20, 19, 9, 12, .count = 1},
+    {17, 22, 13,  9, 14, .count = 1},
+    {19, 21, 14,  8, 13, .count = 1},
+    {20, 21, 15,  8, 13, .count = 1},
+    {21, 20, 17,  8, 13, .count = 1},
+    {22, 20, 19,  9, 12, .count = 1},
     {23, 19, 21, 10, 12, .count = 1},
     {25, 19, 22, 10, 12, .count = 1},
     {26, 21, 23, 10, 11, .count = 1},
-    {26, 23, 23, 9, 9, .count = 1},
-    {25, 25, 24, 8, 6, .count = 1},
-    {25, 27, 24, 7, 4, .count = 1},
-    {24, 29, 24, 6, 2, .count = 1},
-    {24, 30, 23, 6, 0, .count = 1},
-    {24, 31, 22, 6, 0, .count = 1},
-    {25, 30, 21, 7, 1, .count = 1},
-    {26, 28, 20, 8, 2, .count = 1},
-    {27, 27, 19, 9, 4, .count = 1},
-    {28, 26, 18, 10, 6, .count = 1},
-    {29, 25, 17, 11, 7, .count = 1},
-    {29, 25, 15, 11, 7, .count = 1},
-    {28, 24, 15, 10, 9, .count = 1},
-    {27, 22, 16, 8, 11, .count = 1},
-    {26, 20, 17, 7, 13, .count = 1},
-    {25, 18, 19, 7, 16, .count = 1},
-    {24, 16, 20, 6, 18, .count = 1},
-    {23, 16, 20, 7, 19, .count = 1},
-    {22, 15, 20, 8, 19, .count = 1},
+    {26, 23, 23,  9,  9, .count = 1},
+    {25, 25, 24,  8,  6, .count = 1},
+    {25, 27, 24,  7,  4, .count = 1},
+    {24, 29, 24,  6,  2, .count = 1},
+    {24, 30, 23,  6,  0, .count = 1},
+    {24, 31, 22,  6,  0, .count = 1},
+    {25, 30, 21,  7,  1, .count = 1},
+    {26, 28, 20,  8,  2, .count = 1},
+    {27, 27, 19,  9,  4, .count = 1},
+    {28, 26, 18, 10,  6, .count = 1},
+    {29, 25, 17, 11,  7, .count = 1},
+    {29, 25, 15, 11,  7, .count = 1},
+    {28, 24, 15, 10,  9, .count = 1},
+    {27, 22, 16,  8, 11, .count = 1},
+    {26, 20, 17,  7, 13, .count = 1},
+    {25, 18, 19,  7, 16, .count = 1},
+    {24, 16, 20,  6, 18, .count = 1},
+    {23, 16, 20,  7, 19, .count = 1},
+    {22, 15, 20,  8, 19, .count = 1},
     {23, 15, 20, 11, 20, .count = 1},
     {22, 14, 20, 13, 20, .count = 1},
     {22, 14, 19, 15, 21, .count = 1},
@@ -232,46 +334,46 @@ const led_pattern2 perlin_hi[] PROGMEM =
     {19, 13, 19, 18, 23, .count = 1},
     {17, 12, 19, 20, 24, .count = 1},
     {16, 11, 20, 21, 24, .count = 1},
-    {16, 8, 22, 23, 25, .count = 1},
-    {16, 6, 23, 26, 26, .count = 1},
-    {15, 4, 23, 28, 25, .count = 1},
-    {14, 2, 23, 30, 25, .count = 1},
-    {13, 1, 21, 30, 24, .count = 1},
-    {12, 1, 19, 29, 24, .count = 1},
-    {12, 2, 17, 28, 24, .count = 1},
-    {13, 3, 16, 26, 24, .count = 1},
-    {13, 3, 14, 25, 23, .count = 1},
-    {11, 3, 12, 25, 22, .count = 1},
-    {10, 2, 9, 24, 20, .count = 1},
-    {8, 2, 8, 23, 18, .count = 1},
-    {7, 2, 7, 21, 16, .count = 1},
-    {7, 3, 8, 18, 15, .count = 1},
-    {7, 3, 9, 16, 14, .count = 1},
-    {7, 4, 10, 15, 13, .count = 1},
-    {7, 4, 11, 14, 12, .count = 1},
-    {6, 4, 12, 14, 12, .count = 1},
-    {6, 5, 11, 14, 13, .count = 1},
-    {6, 7, 11, 12, 14, .count = 1},
-    {6, 9, 11, 11, 15, .count = 1},
-    {6, 11, 12, 11, 16, .count = 1},
-    {6, 13, 14, 11, 16, .count = 1},
-    {6, 14, 15, 11, 16, .count = 1},
-    {7, 14, 16, 11, 15, .count = 1},
-    {8, 14, 16, 9, 15, .count = 1},
-    {9, 14, 15, 8, 15, .count = 1},
-    {10, 14, 14, 7, 14, .count = 1},
-    {11, 15, 13, 6, 12, .count = 1},
-    {11, 16, 12, 6, 12, .count = 1},
-    {11, 17, 12, 7, 11, .count = 1},
-    {11, 16, 11, 7, 12, .count = 1},
-    {12, 16, 11, 7, 12, .count = 1},
-    {13, 16, 10, 8, 13, .count = 1},
-    {13, 16, 8, 8, 13, .count = 1},
-    {13, 16, 7, 9, 13, .count = 1},
-    {13, 17, 6, 10, 13, .count = 1},
-    {14, 16, 7, 11, 12, .count = 1},
-    {15, 15, 8, 12, 11, .count = 1},
-    {15, 14, 9, 13, 11, .count = 1},
+    {16,  8, 22, 23, 25, .count = 1},
+    {16,  6, 23, 26, 26, .count = 1},
+    {15,  4, 23, 28, 25, .count = 1},
+    {14,  2, 23, 30, 25, .count = 1},
+    {13,  1, 21, 30, 24, .count = 1},
+    {12,  1, 19, 29, 24, .count = 1},
+    {12,  2, 17, 28, 24, .count = 1},
+    {13,  3, 16, 26, 24, .count = 1},
+    {13,  3, 14, 25, 23, .count = 1},
+    {11,  3, 12, 25, 22, .count = 1},
+    {10,  2,  9, 24, 20, .count = 1},
+    { 8,  2,  8, 23, 18, .count = 1},
+    { 7,  2,  7, 21, 16, .count = 1},
+    { 7,  3,  8, 18, 15, .count = 1},
+    { 7,  3,  9, 16, 14, .count = 1},
+    { 7,  4, 10, 15, 13, .count = 1},
+    { 7,  4, 11, 14, 12, .count = 1},
+    { 6,  4, 12, 14, 12, .count = 1},
+    { 6,  5, 11, 14, 13, .count = 1},
+    { 6,  7, 11, 12, 14, .count = 1},
+    { 6,  9, 11, 11, 15, .count = 1},
+    { 6, 11, 12, 11, 16, .count = 1},
+    { 6, 13, 14, 11, 16, .count = 1},
+    { 6, 14, 15, 11, 16, .count = 1},
+    { 7, 14, 16, 11, 15, .count = 1},
+    { 8, 14, 16,  9, 15, .count = 1},
+    { 9, 14, 15,  8, 15, .count = 1},
+    {10, 14, 14,  7, 14, .count = 1},
+    {11, 15, 13,  6, 12, .count = 1},
+    {11, 16, 12,  6, 12, .count = 1},
+    {11, 17, 12,  7, 11, .count = 1},
+    {11, 16, 11,  7, 12, .count = 1},
+    {12, 16, 11,  7, 12, .count = 1},
+    {13, 16, 10,  8, 13, .count = 1},
+    {13, 16,  8,  8, 13, .count = 1},
+    {13, 16,  7,  9, 13, .count = 1},
+    {13, 17,  6, 10, 13, .count = 1},
+    {14, 16,  7, 11, 12, .count = 1},
+    {15, 15,  8, 12, 11, .count = 1},
+    {15, 14,  9, 13, 11, .count = 1},
     {14, 15, 11, 13, 12, .count = 1},
     {13, 16, 12, 13, 13, .count = 1},
     {11, 17, 13, 14, 13, .count = 1},
@@ -279,7 +381,7 @@ const led_pattern2 perlin_hi[] PROGMEM =
 };
 
 
-const led_pattern2 perlin_lo[] PROGMEM = 
+const led_pattern perlin_lo[] PROGMEM = 
 {
     {6, 6, 4, 3, 4, .count = 1},
     {6, 6, 4, 3, 4, .count = 1},
@@ -383,7 +485,7 @@ const led_pattern2 perlin_lo[] PROGMEM =
     {5, 5, 3, 3, 3, .count = 1},
 };
 
-const led_pattern2 binary[] PROGMEM = {
+const led_pattern binary[] PROGMEM = {
     { 1,  1,  1,  1,  1, .count =  1},
     { 3,  5,  2,  3,  5, .count =  1},
     { 5,  9,  3,  5,  9, .count =  1},
@@ -418,31 +520,93 @@ const led_pattern2 binary[] PROGMEM = {
     { 3,  5,  2,  3,  5, .count =  1},
 };
 
+const led_pattern sides[] PROGMEM = {
+    {31, 31,  0,  1,  1, .count = 10},
+    {30, 30,  0,  2,  2, .count =  1},
+    {29, 29,  0,  3,  3, .count =  1},
+    {28, 28,  0,  4,  4, .count =  1},
+    {27, 27,  0,  5,  5, .count =  1},
+    {26, 26,  0,  6,  6, .count =  1},
+    {25, 25,  0,  7,  7, .count =  1},
+    {24, 24,  0,  8,  8, .count =  1},
+    {23, 23,  0,  9,  9, .count =  1},
+    {22, 22,  0, 10, 10, .count =  1},
+    {21, 21,  0, 11, 11, .count =  1},
+    {20, 20,  0, 12, 12, .count =  1},
+    {19, 19,  0, 13, 13, .count =  1},
+    {18, 18,  0, 14, 14, .count =  1},
+    {17, 17,  0, 15, 15, .count =  1},
+    {16, 16,  0, 16, 16, .count =  1},
+    {15, 15,  0, 17, 17, .count =  1},
+    {14, 14,  0, 18, 18, .count =  1},
+    {13, 13,  0, 19, 19, .count =  1},
+    {12, 12,  0, 20, 20, .count =  1},
+    {11, 11,  0, 21, 21, .count =  1},
+    {10, 10,  0, 22, 22, .count =  1},
+    { 9,  9,  0, 23, 23, .count =  1},
+    { 8,  8,  0, 24, 24, .count =  1},
+    { 7,  7,  0, 25, 25, .count =  1},
+    { 6,  6,  0, 26, 26, .count =  1},
+    { 5,  5,  0, 27, 27, .count =  1},
+    { 4,  4,  0, 28, 28, .count =  1},
+    { 3,  3,  0, 29, 29, .count =  1},
+    { 2,  2,  0, 30, 30, .count =  1},
+    { 1,  1,  0, 31, 31, .count = 10},
+    { 2,  2,  0, 30, 30, .count =  1},
+    { 3,  3,  0, 29, 29, .count =  1},
+    { 4,  4,  0, 28, 28, .count =  1},
+    { 5,  5,  0, 27, 27, .count =  1},
+    { 6,  6,  0, 26, 26, .count =  1},
+    { 7,  7,  0, 25, 25, .count =  1},
+    { 8,  8,  0, 24, 24, .count =  1},
+    { 9,  9,  0, 23, 23, .count =  1},
+    {10, 10,  0, 22, 22, .count =  1},
+    {11, 11,  0, 21, 21, .count =  1},
+    {12, 12,  0, 20, 20, .count =  1},
+    {13, 13,  0, 19, 19, .count =  1},
+    {14, 14,  0, 18, 18, .count =  1},
+    {15, 15,  0, 17, 17, .count =  1},
+    {16, 16,  0, 16, 16, .count =  1},
+    {17, 17,  0, 15, 15, .count =  1},
+    {18, 18,  0, 14, 14, .count =  1},
+    {19, 19,  0, 13, 13, .count =  1},
+    {20, 20,  0, 12, 12, .count =  1},
+    {21, 21,  0, 11, 11, .count =  1},
+    {22, 22,  0, 10, 10, .count =  1},
+    {23, 23,  0,  9,  9, .count =  1},
+    {24, 24,  0,  8,  8, .count =  1},
+    {25, 25,  0,  7,  7, .count =  1},
+    {26, 26,  0,  6,  6, .count =  1},
+    {27, 27,  0,  5,  5, .count =  1},
+    {28, 28,  0,  4,  4, .count =  1},
+    {29, 29,  0,  3,  3, .count =  1},
+    {30, 30,  0,  2,  2, .count =  1},
+};
 //#define TEST_PATTERN
 
 #ifdef TEST_PATTERN
-const led_pattern2 one_on[] PROGMEM = {
-    { 16,  0,  0,  0,  0, .count = 20}
-    //{ 31,  0,  0,  0,  0, .count = 1},
-    //{ 0,  0,  0,  0,  0, .count = 1}
+const led_pattern one_on[] PROGMEM = {
+    //{ 16,  0,  0,  0,  0, .count = 20}
+    { 31,  0,  0,  0,  0, .count = 1},
+    { 0,  0,  0,  0,  0, .count = 1}
 };
 #endif
 
 /* Pattern ideas
  * 
- * - perlin noise
  * - other twinkle effect like blink?
  * - light up one corner, then the diagonal, then the other corner, in turn
- * - different leds on different pulse speeds
  */
 
-#define PATTERN_ENTRY(name, div) { .array = (name), .len = sizeof(name)/sizeof(led_pattern2), .divisor = div }
+#define PATTERN_ENTRY(name, div) { .array = (name), .len = sizeof(name)/sizeof(led_pattern), .divisor = div }
 
 const pattern_t PATTERNS_HI[] PROGMEM = 
 {
 #ifdef TEST_PATTERN
-    PATTERN_ENTRY(one_on, 4),
+    PATTERN_ENTRY(one_on, 1),
 #endif
+    PATTERN_ENTRY(blink_more, 2),
+    PATTERN_ENTRY(sides, 1),
     PATTERN_ENTRY(one_circle, 2),
     PATTERN_ENTRY(perlin_hi, 2),
     PATTERN_ENTRY(binary, 3),
@@ -456,12 +620,14 @@ const pattern_t PATTERNS_HI[] PROGMEM =
 const pattern_t PATTERNS_LO[] PROGMEM = 
 {
 #ifdef TEST_PATTERN
-    PATTERN_ENTRY(one_on, 4),
+    PATTERN_ENTRY(one_on, 1),
 #endif
+    PATTERN_ENTRY(blink_more, 2),
+    PATTERN_ENTRY(sides, 1),
     PATTERN_ENTRY(one_circle, 2),
     PATTERN_ENTRY(perlin_lo, 2),
     PATTERN_ENTRY(blink, 2),
-    PATTERN_ENTRY(middle_fade, 4)
+    PATTERN_ENTRY(middle_fade, 3)
 };
 
 #define NUM_PATTERNS_LO (sizeof(PATTERNS_LO)/sizeof(pattern_t))
