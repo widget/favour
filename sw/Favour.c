@@ -35,12 +35,20 @@ for(;;) \
 } \
 } while(0)
 
-#define LED_MAX_BRIGHT 32
+#define STAGGER_LED_PWM
+#define BUTTON_CYCLE_PATTERN
+#define GAMMA_CORRECTION
+
+#ifdef GAMMA_CORRECTION
+#define LED_MAX_BRIGHT 64
+#else
+#define LED_BRIGHT_MAX 32
+#endif
+
 #define LED_FREQ 256
 // Precalculate LED values, rather than in the interrupt
 uint8_t led_pwm[LED_MAX_BRIGHT];
 uint8_t count = 0;
-uint8_t fcount = 0;
 uint16_t ticks = 0;
 /* Interrupt triggered by the timer every 5kHz,
  * a simple PWM control of all LEDs.
@@ -51,11 +59,6 @@ ISR(TIMER0_COMPA_vect, ISR_BLOCK)
     if (count >= LED_MAX_BRIGHT)
     {
         count = 0;
-        fcount++;
-    }
-    if (fcount >= 2)
-    {
-        fcount = 0;
         ticks++;
     }
     
@@ -73,7 +76,11 @@ const uint8_t PROGMEM gamma12_lut[32] = {0,1,2,3,5, 6, 8,10,12,13,15,17,19,21,23
 
 void set_led_pwm(const uint8_t led, const uint8_t bright)
 {
-    //uint8_t val = pgm_read_byte_near(gamma12_lut + bright);
+#ifdef GAMMA_CORRECTION
+    const uint8_t val = pgm_read_byte_near(gamma12_lut + bright);
+#else
+    const uint8_t val = bright;
+#endif
     const uint8_t led_on = _BV(led);
     const uint8_t led_off = ~led_on;
     
@@ -85,7 +92,7 @@ void set_led_pwm(const uint8_t led, const uint8_t bright)
 #else
         uint8_t which = i;
 #endif
-        if (i < bright)
+        if (i < val)
             led_pwm[which] |= led_on;
         else
             led_pwm[which] &= led_off;
@@ -271,14 +278,14 @@ void SetupHardware()
         clock_prescale_set(clock_div_1);
         USB_Init();
         
-        OCR0A  =   29; // 4096Hz
-        // set timer0 to be 16MHz/64 = 8andabit kHz
+        OCR0A  =   29; // waveform 2083Hz (this gets / LED_MAX_BRIGHT)
+        // set timer0 to be 8MHz/64
         TCCR0B = 0x03;
     }
     else
     {
         // going slower than this leaves too little time for the interrupt
-        clock_prescale_set(clock_div_16);
+        clock_prescale_set(clock_div_8);
         
         USB_Disable();
         
@@ -288,8 +295,8 @@ void SetupHardware()
         set_sleep_mode(SLEEP_MODE_IDLE);
         sleep_enable();
         
-        OCR0A  =   119; // 4096Hz
-        // Set timer0 to be 8/(16*1) - 125kHz
+        OCR0A  =   239; // waveform 2083Hz (this gets / LED_MAX_BRIGHT)
+        // Set timer0 to be 1MHz/1
         TCCR0B = 0x01;
     }
     
