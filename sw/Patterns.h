@@ -126,7 +126,7 @@ const led_pattern blink_more[] PROGMEM = {
 //_Static_assert((sizeof(blink)/sizeof(led_pattern)) == 32, "blink is not 32");
 
 const led_pattern all_fade[] PROGMEM = {
-    { 1,  1,  0,  1,  1, .count = 26},
+    { 1,  1,  0,  1,  1, .count = 30},
     { 2,  2,  0,  2,  2, .count =  1},
     { 3,  3,  0,  3,  3, .count =  1},
     { 4,  4,  0,  4,  4, .count =  1},
@@ -145,7 +145,7 @@ const led_pattern all_fade[] PROGMEM = {
     {22, 22, 20, 22, 22, .count =  1},
     {26, 26, 23, 26, 26, .count =  1},
     {28, 28, 26, 28, 28, .count =  1},
-    {31, 31, 31, 31, 31, .count =  8},
+    {31, 31, 31, 31, 31, .count = 18},
     {28, 28, 26, 28, 28, .count =  1},
     {26, 26, 23, 26, 26, .count =  1},
     {22, 22, 20, 22, 22, .count =  1},
@@ -164,7 +164,7 @@ const led_pattern all_fade[] PROGMEM = {
     { 4,  4,  0,  4,  4, .count =  1},
     { 3,  3,  0,  3,  3, .count =  1},
     { 2,  2,  0,  2,  2, .count =  1},
-    { 1,  1,  0,  1,  1, .count =  1},
+    { 1,  1,  0,  1,  1, .count = 10},
 };
 
 const led_pattern middle_fade[] PROGMEM = {
@@ -228,6 +228,70 @@ const led_pattern middle_fade[] PROGMEM = {
     { 0,  0,  4,  0,  0, .count =  1},
     { 0,  0,  3,  0,  0, .count =  1},
     { 0,  0,  2,  0,  0, .count =  1},
+};
+
+const led_pattern worm[] PROGMEM = {
+    { 1,  0,  0,  0,  0, .count = 1},
+    { 4,  0,  0,  0,  0, .count = 1},
+    { 8,  0,  0,  0,  0, .count = 1},
+    {16,  0,  0,  0,  0, .count = 1},
+    {24,  0,  0,  0,  0, .count = 1},
+    {31,  0,  0,  0,  0, .count = 1},
+    {31,  1,  0,  0,  0, .count = 1},
+    {31,  4,  0,  0,  0, .count = 1},
+    {31,  8,  0,  0,  0, .count = 1},
+    {31, 16,  0,  0,  0, .count = 1},
+    {31, 24,  0,  0,  0, .count = 1},
+    {31, 31,  0,  0,  0, .count = 1},
+    {31, 31,  0,  1,  0, .count = 1},
+    {31, 31,  0,  4,  0, .count = 1},
+    {31, 31,  0,  8,  0, .count = 1},
+    {31, 31,  0, 16,  0, .count = 1},
+    {31, 31,  0, 24,  0, .count = 1},
+    {31, 31,  0, 31,  0, .count = 1},
+    {31, 31,  0, 31,  1, .count = 1},
+    {31, 31,  0, 31,  4, .count = 1},
+    {31, 31,  0, 31,  8, .count = 1},
+    {31, 31,  0, 31, 16, .count = 1},
+    {31, 31,  0, 31, 24, .count = 1},
+    {31, 31,  0, 31, 31, .count = 1},
+    {31, 31,  1, 31, 31, .count = 1},
+    {31, 31,  4, 31, 31, .count = 1},
+    {31, 31,  8, 31, 31, .count = 1},
+    {31, 31, 16, 31, 31, .count = 1},
+    {31, 31, 24, 31, 31, .count = 1},
+    {31, 31, 31, 31, 31, .count = 1},
+    {31, 31, 31, 31, 31, .count =12},
+    {24, 31, 31, 31, 31, .count = 1},
+    {16, 31, 31, 31, 31, .count = 1},
+    { 8, 31, 31, 31, 31, .count = 1},
+    { 4, 31, 31, 31, 31, .count = 1},
+    { 1, 31, 31, 31, 31, .count = 1},
+    { 0, 31, 31, 31, 31, .count = 1},
+    { 0, 24, 31, 31, 31, .count = 1},
+    { 0, 16, 31, 31, 31, .count = 1},
+    { 0,  8, 31, 31, 31, .count = 1},
+    { 0,  4, 31, 31, 31, .count = 1},
+    { 0,  1, 31, 31, 31, .count = 1},
+    { 0,  0, 31, 31, 31, .count = 1},
+    { 0,  0, 31, 24, 31, .count = 1},
+    { 0,  0, 31, 16, 31, .count = 1},
+    { 0,  0, 31,  8, 31, .count = 1},
+    { 0,  0, 31,  4, 31, .count = 1},
+    { 0,  0, 31,  1, 31, .count = 1},
+    { 0,  0, 31,  0, 31, .count = 1},
+    { 0,  0, 31,  0, 24, .count = 1},
+    { 0,  0, 31,  0, 16, .count = 1},
+    { 0,  0, 31,  0,  8, .count = 1},
+    { 0,  0, 31,  0,  4, .count = 1},
+    { 0,  0, 31,  0,  1, .count = 1},
+    { 0,  0, 31,  0,  0, .count = 1},
+    { 0,  0, 24,  0,  0, .count = 1},
+    { 0,  0, 16,  0,  0, .count = 1},
+    { 0,  0,  8,  0,  0, .count = 1},
+    { 0,  0,  4,  0,  0, .count = 1},
+    { 0,  0,  1,  0,  0, .count = 1},
+    { 0,  0,  0,  0,  0, .count =16},
 };
 
 const led_pattern one_circle[] PROGMEM = {
@@ -582,6 +646,7 @@ const led_pattern sides[] PROGMEM = {
     {29, 29,  0,  3,  3, .count =  1},
     {30, 30,  0,  2,  2, .count =  1},
 };
+
 //#define TEST_PATTERN
 
 #ifdef TEST_PATTERN
@@ -605,14 +670,15 @@ const pattern_t PATTERNS_HI[] PROGMEM =
 #ifdef TEST_PATTERN
     PATTERN_ENTRY(one_on, 1),
 #endif
+    PATTERN_ENTRY(worm, 2),
     PATTERN_ENTRY(blink_more, 2),
     PATTERN_ENTRY(sides, 1),
     PATTERN_ENTRY(one_circle, 2),
     PATTERN_ENTRY(perlin_hi, 2),
     PATTERN_ENTRY(binary, 3),
+    PATTERN_ENTRY(blink, 2),
     PATTERN_ENTRY(two_circle, 2),
     PATTERN_ENTRY(all_fade, 3),
-    PATTERN_ENTRY(blink, 2),
 };
 
 #define NUM_PATTERNS_HI (sizeof(PATTERNS_HI)/sizeof(pattern_t))
@@ -623,10 +689,10 @@ const pattern_t PATTERNS_LO[] PROGMEM =
     PATTERN_ENTRY(one_on, 1),
 #endif
     PATTERN_ENTRY(blink_more, 2),
-    PATTERN_ENTRY(sides, 1),
     PATTERN_ENTRY(one_circle, 2),
     PATTERN_ENTRY(perlin_lo, 2),
     PATTERN_ENTRY(blink, 2),
+    PATTERN_ENTRY(sides, 1),
     PATTERN_ENTRY(middle_fade, 3)
 };
 
