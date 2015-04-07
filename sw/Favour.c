@@ -99,6 +99,9 @@ void set_led_pwm(const uint8_t led, const uint8_t bright)
     }
 }
 
+// hid_present was for if we'd enumerated as HID, but now it's whether
+// to be controlled as HID, seeing as macs and stuff might not support
+// that out of the box.
 bool vusb_present = true, hwb_last = false;
 bool hid_present = false;
 uint16_t last_press = 0;
@@ -140,7 +143,7 @@ int main(void)
         if (ticks >= next)
         {
             uint32_t val = pgm_read_dword_near(&(current_pattern.array[idx]));
-            led_pattern2* tmp = (led_pattern2*)(&val);
+            led_pattern* tmp = (led_pattern*)(&val);
             
             set_led_pwm(0, tmp->led0);
             set_led_pwm(1, tmp->led1);
@@ -320,8 +323,6 @@ void EVENT_USB_Device_ConfigurationChanged(void)
     ConfigSuccess &= HID_Device_ConfigureEndpoints(&Keyboard_HID_Interface);
 
     USB_Device_EnableSOFEvents();
-
-    hid_present = true;
 }
 
 /** Event handler for the library USB Control Request reception event. */
@@ -393,10 +394,13 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
             toggle = true;
         }
         caps = true;
+        // We've received a relevant HID report, don't autocycle
+        hid_present = true;
     }
     else
     {
         caps = false;
     }
+
 }
 
