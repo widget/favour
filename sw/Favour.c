@@ -39,6 +39,12 @@ for(;;) \
 #define BUTTON_CYCLE_PATTERN
 #define GAMMA_CORRECTION
 
+enum state_t {
+    Patterns,
+    Pomodoro_Running,
+    Pomodoro_Paused,
+};
+
 #ifdef GAMMA_CORRECTION
 #define LED_MAX_BRIGHT 64
 #else
@@ -47,7 +53,7 @@ for(;;) \
 
 #define LED_FREQ 256
 // Precalculate LED values, rather than in the interrupt
-uint8_t led_pwm[LED_MAX_BRIGHT];
+uint8_t led_pwm[LED_MAX_BRIGHT] = {0};
 uint8_t count = 0;
 uint16_t ticks = 0;
 /* Interrupt triggered by the timer every 5kHz,
@@ -107,6 +113,8 @@ bool hid_present = false;
 uint16_t last_press = 0;
 bool toggle = false;
 uint8_t pattern_count = 0;
+bool caps_led_status = false;
+bool scroll_led_status = false;
 
 uint8_t set_pattern_get_next(pattern_t *pt, uint8_t idx)
 {
@@ -122,13 +130,69 @@ uint8_t set_pattern_get_next(pattern_t *pt, uint8_t idx)
     }
 
 }
-    
+
+// 25 (min) * 60 (sec) * 33 (hz)
+#define POMODORO_TIME_COUNT 49500u
+#define POMODORO_MAX_COUNT (POMODORO_TIME_COUNT + (15 * 8))
+
+// count is 65-66hz/2
+uint8_t generate_pulse(uint16_t count)
+{
+    count >>= 1;
+    const uint8_t pulse[32] = {0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 1,2,3,6,8,4,2,1};
+
+    return pulse[count & 0x1f];
+
+}
+
+uint16_t generate_pomodoro(uint16_t count, uint8_t* leds)
+{
+    uint16_t seconds = count / 33;
+    uint16_t mins = (seconds - (seconds % 60)) / 60;
+
+    mins++; // counting from zero not useful here
+
+    if (mins < 26) {
+        leds[0] = MIN(mins, 5);
+        if (mins > 5)
+            leds[1] = MIN(mins - 5, 5);
+        if (mins > 10)
+            leds[2] = MIN(mins - 10, 5);
+        if (mins > 15)
+            leds[3] = MIN(mins - 15, 5);
+        if (mins > 20)
+            leds[4] = MIN(mins - 20, 5);
+
+        for (uint8_t i = 0; i < 5; ++i) {
+            if (leds[i] > 0) {
+                leds[i] *= 2;
+                leds[i] += generate_pulse(count - ((uint16_t) i << 3));
+            }
+        }
+
+    }
+    else // more than 25 minutes, do something else
+    {
+        const uint8_t wave[15] = {1,2,6,8,10,15,20,8,2,1,0,0,0,0,0};
+        uint16_t idx = count - POMODORO_TIME_COUNT;
+        for (uint8_t i = 0; i < 5; ++i)
+        {
+            leds[i] = wave[(idx + (i * 3)) % sizeof(wave)];
+        }
+    }
+
+    count++;
+    return count;
+}
+
 /** Main program entry point. This routine contains the overall program flow, including initial
  *  setup of all components and the main program loop.
  */
 int main(void)
 {
+    enum state_t state = Patterns;
     uint16_t next = 0;
+    uint32_t val;
     uint8_t idx = 0;
     uint8_t pattern_idx = 0;
     SetupHardware();
@@ -136,33 +200,73 @@ int main(void)
     pattern_t current_pattern;
     pattern_idx = set_pattern_get_next(&current_pattern, pattern_idx);
     GlobalInterruptEnable();
-    
+    uint8_t leds[5] = {0};
+    uint16_t pomo_count = 0;
     while(1)
     {
         // Actually running through the selected LED pattern here
         if (ticks >= next)
         {
-            uint32_t val = pgm_read_dword_near(&(current_pattern.array[idx]));
-            led_pattern* tmp = (led_pattern*)(&val);
-            
-            set_led_pwm(0, tmp->led0);
-            set_led_pwm(1, tmp->led1);
-            set_led_pwm(2, tmp->led2);
-            set_led_pwm(3, tmp->led3);
-            set_led_pwm(4, tmp->led4);
-            
-            idx++;
-            if (idx == current_pattern.len)
+
+            switch (state)
             {
-                idx = 0;
-                pattern_count++;
-            }
-            next = ticks + ((uint16_t)current_pattern.divisor * tmp->count);
-            if (next == 0xffff)
-            {
-                next = 0; // could fuck up GTE check
+                case Patterns:
+                    val = pgm_read_dword_near(&(current_pattern.array[idx]));
+                    led_pattern* tmp = (led_pattern*)(&val);
+
+                    set_led_pwm(0, tmp->led0);
+                    set_led_pwm(1, tmp->led1);
+                    set_led_pwm(2, tmp->led2);
+                    set_led_pwm(3, tmp->led3);
+                    set_led_pwm(4, tmp->led4);
+                    idx++;
+                    if (idx == current_pattern.len)
+                    {
+                        idx = 0;
+                        pattern_count++;
+                    }
+                    next = ticks + ((uint16_t)current_pattern.divisor * tmp->count);
+                    if (next == 0xffff)
+                    {
+                        next = 0; // could fuck up GTE check
+                    }
+                    break;
+
+                case Pomodoro_Running:
+                    // In this one we manipulate the count a lot
+                    pomo_count = generate_pomodoro(pomo_count, leds);
+                    next += 2;
+                    set_led_pwm(0, leds[0]);
+                    set_led_pwm(1, leds[1]);
+                    set_led_pwm(3, leds[2]);
+                    set_led_pwm(4, leds[3]);
+                    set_led_pwm(2, leds[4]);
+
+                    if (pomo_count > POMODORO_MAX_COUNT)
+                    {
+                        // Don't reset, keep the pomodoro timer in jazz mode
+                        pomo_count = POMODORO_TIME_COUNT;
+                        next = ticks = POMODORO_TIME_COUNT;
+                    }
+                    break;
+
+                case Pomodoro_Paused:
+                    // TODO can't we just remove most of this case
+                    // Exactly the same as case 1 but we don't increment
+                    (void)generate_pomodoro(pomo_count, leds);
+                    next += 2;
+                    set_led_pwm(0, leds[0]);
+                    set_led_pwm(1, leds[1]);
+                    set_led_pwm(3, leds[2]);
+                    set_led_pwm(4, leds[3]);
+                    set_led_pwm(2, leds[4]);
+
+                    if (pomo_count == 0)
+                        next = 2;
+                    break;
             }
         }
+
         
         if (vusb_present)
         {
@@ -198,18 +302,45 @@ int main(void)
             // RESET
             soft_reset();
         }
-        
+
         if (hid_present)
         {
-            // Cycle onto the next pattern if caps is toggled
-            if (toggle)
+            // Work out what event happened from our two LED interface
+
+            if (scroll_led_status)
             {
-                // Next pattern
-                pattern_idx = set_pattern_get_next(&current_pattern, pattern_idx);
-                // And restart
-                idx = 0;
-                next = 0;
-                toggle = false;
+                // pomodoro
+                if (state == Patterns)
+                {
+                    // reset state
+                    pomo_count = ticks = next = 0;
+                    toggle = false;
+                }
+
+                if (caps_led_status)
+                    state = Pomodoro_Paused;
+                else
+                    state = Pomodoro_Running;
+            }
+            else
+            {
+                if (state != Patterns)
+                {
+                    idx = 0;
+                    ticks = next = 0;
+                    toggle = false;
+                }
+
+                state = Patterns;
+                if (toggle)
+                {
+                    // Next pattern
+                    pattern_idx = set_pattern_get_next(&current_pattern, pattern_idx);
+                    // And restart
+                    idx = 0;
+                    ticks = next = 0;
+                    toggle = false;
+                }
             }
         }
         else // battery mode
@@ -224,12 +355,12 @@ int main(void)
                 
                 toggle = false;
             }
-            
+            state = Patterns; // ALWAYS
             // only sleep in battery mode
             sei();
             sleep_cpu();
         }
-        
+
 	}
 }
 
@@ -383,23 +514,38 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
                                           const void* ReportData,
                                           const uint16_t ReportSize)
 {
-    static bool caps = false;
     uint8_t* LEDReport = (uint8_t*)ReportData;
 
     // Check for capslock turning on
     if (*LEDReport & HID_KEYBOARD_LED_CAPSLOCK)
     {
-        if (!caps)
+        if (!caps_led_status)
         {
             toggle = true;
         }
-        caps = true;
+        caps_led_status = true;
         // We've received a relevant HID report, don't autocycle
         hid_present = true;
     }
     else
     {
-        caps = false;
+        caps_led_status = false;
+    }
+
+    // Check for capslock turning on
+    if (*LEDReport & HID_KEYBOARD_LED_SCROLLLOCK)
+    {
+        if (!scroll_led_status)
+        {
+            toggle = true;
+        }
+        scroll_led_status = true;
+        // We've received a relevant HID report, don't autocycle
+        hid_present = true;
+    }
+    else
+    {
+        scroll_led_status = false;
     }
 
 }
